@@ -1,0 +1,3318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Z-Bet — Premium Casino</title>
+<style>
+:root {
+  --bg: #050a14;
+  --bg2: #080f1e;
+  --bg3: #0c1628;
+  --panel: rgba(10,20,45,0.85);
+  --panel2: rgba(15,28,58,0.9);
+  --border: rgba(60,120,255,0.18);
+  --border2: rgba(60,120,255,0.35);
+  --accent: #2563ff;
+  --accent2: #3d7fff;
+  --neon: #00cfff;
+  --neon2: #0ff;
+  --gold: #f5c842;
+  --green: #00e676;
+  --red: #ff3d5a;
+  --text: #e8f0ff;
+  --text2: #8aa4d8;
+  --text3: #4a6899;
+  --radius: 14px;
+  --radius2: 20px;
+  --shadow: 0 4px 32px rgba(0,80,255,0.12);
+  --glow: 0 0 24px rgba(0,120,255,0.3);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  position: relative;
+}
+
+/* === CANVAS BG === */
+#bgCanvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* === SCROLLABLE WRAPPER === */
+#appRoot {
+  position: relative;
+  z-index: 1;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* === NAV === */
+#topNav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 24px;
+  height: 62px;
+  background: rgba(5,10,20,0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 100;
+}
+
+.nav-logo {
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, var(--accent2), var(--neon));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  flex-shrink: 0;
+}
+
+.nav-logo span {
+  background: linear-gradient(135deg, #fff, var(--neon));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav-sep { flex: 1; }
+
+.nav-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  padding: 6px 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.nav-stat-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+.nav-stat-val { font-size: 14px; font-weight: 700; color: var(--text); }
+
+#balanceDisplay {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: linear-gradient(135deg, rgba(37,99,255,0.2), rgba(0,207,255,0.1));
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+#balanceDisplay:hover { border-color: var(--neon); box-shadow: 0 0 16px rgba(0,207,255,0.2); }
+.bal-icon { font-size: 16px; }
+.bal-label { font-size: 11px; color: var(--text2); }
+.bal-amount { font-size: 17px; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; }
+.bal-currency { font-size: 11px; color: var(--neon); font-weight: 700; }
+
+#depositBtn {
+  padding: 9px 20px;
+  background: linear-gradient(135deg, var(--accent), #1040cc);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+#depositBtn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(37,99,255,0.5); }
+#depositBtn:active { transform: translateY(0); }
+
+/* === MAIN CONTENT === */
+#mainContent {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) transparent;
+}
+#mainContent::-webkit-scrollbar { width: 5px; }
+#mainContent::-webkit-scrollbar-track { background: transparent; }
+#mainContent::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+/* === SCREENS === */
+.screen { display: none; animation: fadeSlideIn 0.3s ease; }
+.screen.active { display: block; }
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === HOME SCREEN === */
+#homeScreen { padding: 28px 24px 40px; }
+
+.home-hero {
+  text-align: center;
+  margin-bottom: 36px;
+  padding: 32px 20px;
+  background: linear-gradient(135deg, rgba(37,99,255,0.08), rgba(0,207,255,0.04));
+  border: 1px solid var(--border);
+  border-radius: var(--radius2);
+  position: relative;
+  overflow: hidden;
+}
+.home-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  height: 200px;
+  background: radial-gradient(ellipse, rgba(37,99,255,0.12), transparent 70%);
+  pointer-events: none;
+}
+.home-hero h1 { font-size: 38px; font-weight: 900; letter-spacing: -1.5px; margin-bottom: 8px; }
+.home-hero h1 span { background: linear-gradient(135deg, #fff, var(--neon)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.home-hero p { color: var(--text2); font-size: 15px; }
+
+.section-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text3);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 40px;
+}
+
+.game-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+  position: relative;
+  aspect-ratio: 3/4;
+  display: flex;
+  flex-direction: column;
+}
+.game-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  border-color: var(--accent2);
+  box-shadow: 0 8px 32px rgba(37,99,255,0.25), 0 0 0 1px rgba(0,207,255,0.1);
+}
+.game-card:hover .game-play-btn { opacity: 1; transform: translateY(0); }
+.game-card:hover .game-thumb-overlay { opacity: 1; }
+
+.game-thumb {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg3);
+}
+
+.game-thumb-svg {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+}
+
+.game-thumb-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(5,15,40,0.5);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.game-play-btn {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  background: linear-gradient(135deg, var(--accent), var(--neon));
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 7px 20px;
+  border-radius: 20px;
+  opacity: 0;
+  transition: all 0.2s;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+.game-info {
+  padding: 10px 12px 12px;
+  background: rgba(5,12,28,0.95);
+  border-top: 1px solid var(--border);
+}
+.game-name { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.game-tag { font-size: 10px; color: var(--text3); }
+
+/* === GAME SCREEN === */
+#gameScreen {
+  min-height: calc(100vh - 62px);
+  display: none;
+  flex-direction: column;
+}
+#gameScreen.active { display: flex; }
+
+.game-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 24px;
+  background: rgba(5,10,20,0.7);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.back-btn {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--text2);
+  font-size: 18px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.back-btn:hover { border-color: var(--accent2); color: var(--text); }
+.game-header-name { font-size: 18px; font-weight: 800; }
+.game-header-tag { font-size: 12px; color: var(--text3); }
+
+.game-layout {
+  flex: 1;
+  display: flex;
+  gap: 16px;
+  padding: 20px 24px;
+  overflow: hidden;
+}
+
+.game-main {
+  flex: 1;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  min-height: 400px;
+}
+
+.game-sidebar {
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.bet-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius2);
+  padding: 20px;
+}
+
+.bet-panel-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text3);
+  margin-bottom: 14px;
+  font-weight: 700;
+}
+
+.bet-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.bet-label { font-size: 12px; color: var(--text2); flex: 1; }
+
+.bet-input-wrap {
+  display: flex;
+  align-items: center;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.bet-input-wrap:focus-within { border-color: var(--accent2); }
+
+.bet-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 700;
+  padding: 9px 12px;
+  width: 110px;
+  font-variant-numeric: tabular-nums;
+}
+
+.btn-half, .btn-dbl, .btn-max {
+  background: var(--bg3);
+  border: none;
+  border-left: 1px solid var(--border);
+  color: var(--text3);
+  font-size: 11px;
+  padding: 0 10px;
+  height: 38px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-weight: 600;
+}
+.btn-half:hover, .btn-dbl:hover, .btn-max:hover { background: rgba(37,99,255,0.15); color: var(--accent2); }
+
+.bet-quick {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.bet-quick-btn {
+  flex: 1;
+  min-width: 48px;
+  padding: 7px 4px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text2);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+.bet-quick-btn:hover { border-color: var(--accent2); color: var(--text); background: rgba(37,99,255,0.1); }
+
+.play-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--accent), #1844cc);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.play-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.play-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(37,99,255,0.45); }
+.play-btn:hover::after { opacity: 1; }
+.play-btn:active { transform: translateY(0); }
+.play-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.play-btn.cashout {
+  background: linear-gradient(135deg, #00c853, #007a32);
+}
+.play-btn.cashout:hover { box-shadow: 0 6px 24px rgba(0,200,83,0.4); }
+
+.result-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius2);
+  padding: 16px;
+  text-align: center;
+}
+.result-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); margin-bottom: 6px; }
+.result-val { font-size: 24px; font-weight: 900; }
+.result-val.win { color: var(--green); }
+.result-val.lose { color: var(--red); }
+
+.history-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius2);
+  padding: 14px;
+  max-height: 140px;
+  overflow: hidden;
+}
+.history-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); margin-bottom: 10px; }
+.history-list { display: flex; flex-wrap: wrap; gap: 5px; }
+.history-item {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.history-item.win { background: rgba(0,230,118,0.12); color: var(--green); border: 1px solid rgba(0,230,118,0.2); }
+.history-item.lose { background: rgba(255,61,90,0.12); color: var(--red); border: 1px solid rgba(255,61,90,0.2); }
+
+/* === CANVAS GAMES === */
+#gameCanvas {
+  display: block;
+  border-radius: 16px;
+}
+
+/* === MODALS === */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius2);
+  padding: 32px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  transform: scale(0.92) translateY(10px);
+  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+.modal-overlay.open .modal { transform: scale(1) translateY(0); }
+.modal h2 { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+.modal p { color: var(--text2); font-size: 14px; margin-bottom: 20px; line-height: 1.5; }
+.modal-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.modal-input:focus { border-color: var(--accent2); }
+.modal-actions { display: flex; gap: 10px; }
+.modal-btn-primary {
+  flex: 1;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--accent), #1040cc);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.modal-btn-primary:hover { box-shadow: 0 4px 20px rgba(37,99,255,0.4); }
+.modal-btn-cancel {
+  padding: 12px 20px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text2);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.modal-btn-cancel:hover { border-color: var(--accent2); color: var(--text); }
+
+/* === MOCKERY OVERLAY === */
+#mockeryOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.88);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+#mockeryOverlay.show { opacity: 1; pointer-events: all; }
+#mockeryEmoji {
+  font-size: 160px;
+  animation: mockZoom 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  line-height: 1;
+  text-align: center;
+}
+@keyframes mockZoom {
+  from { transform: scale(0.3); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* === TOAST === */
+#toastContainer {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 5000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.toast.win { background: rgba(0,230,118,0.15); border: 1px solid rgba(0,230,118,0.3); color: var(--green); }
+.toast.lose { background: rgba(255,61,90,0.12); border: 1px solid rgba(255,61,90,0.25); color: var(--red); }
+.toast.info { background: rgba(37,99,255,0.15); border: 1px solid rgba(37,99,255,0.3); color: var(--accent2); }
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(20px) scale(0.9); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+/* === CHIP ANIMATIONS === */
+@keyframes floatUp {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(-60px) scale(1.2); }
+}
+.float-chip {
+  position: fixed;
+  font-size: 16px;
+  font-weight: 800;
+  pointer-events: none;
+  z-index: 9000;
+  animation: floatUp 1s ease forwards;
+}
+.float-chip.win { color: var(--green); }
+.float-chip.lose { color: var(--red); }
+
+/* === LOADING SCREEN === */
+#loadingScreen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  transition: opacity 0.5s;
+}
+.loader-logo {
+  font-size: 48px;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--accent2), var(--neon));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: pulseGlow 1.5s ease-in-out infinite;
+}
+@keyframes pulseGlow {
+  0%, 100% { filter: drop-shadow(0 0 10px rgba(0,207,255,0.3)); }
+  50% { filter: drop-shadow(0 0 25px rgba(0,207,255,0.7)); }
+}
+.loader-bar {
+  width: 200px;
+  height: 3px;
+  background: var(--bg3);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.loader-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--neon));
+  border-radius: 3px;
+  animation: loadFill 1.2s ease-in-out forwards;
+}
+@keyframes loadFill {
+  from { width: 0; }
+  to { width: 100%; }
+}
+.loader-text { font-size: 13px; color: var(--text3); letter-spacing: 2px; text-transform: uppercase; }
+
+/* === GAME SPECIFIC CSS === */
+.aviator-multi {
+  font-size: 80px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(135deg, #fff, var(--neon));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  transition: all 0.05s;
+  text-align: center;
+}
+.aviator-multi.crashed { background: linear-gradient(135deg, var(--red), #ff8080); -webkit-background-clip: text; background-clip: text; }
+.aviator-desc { font-size: 12px; color: var(--text2); text-align: center; margin-top: 8px; line-height: 1.6; max-width: 280px; }
+
+.plinko-board { position: relative; }
+.roulette-wheel { border-radius: 50%; }
+
+/* Blackjack */
+.card-container { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.playing-card {
+  width: 56px;
+  height: 80px;
+  background: #fff;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 900;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  animation: cardDeal 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  position: relative;
+  flex-shrink: 0;
+}
+.playing-card.red { color: #e00; }
+.playing-card.black { color: #111; }
+.playing-card.facedown { background: linear-gradient(135deg, #1a3a8f, #0d1f4f); }
+.card-rank { font-size: 13px; position: absolute; top: 4px; left: 6px; }
+.card-suit { font-size: 26px; }
+@keyframes cardDeal {
+  from { transform: scale(0.4) rotate(-10deg); opacity: 0; }
+  to { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+/* Texas Hold'em */
+.poker-table {
+  background: radial-gradient(ellipse, #0a4a2a, #052a14);
+  border-radius: 50%;
+  border: 8px solid #3a1f0a;
+  position: relative;
+}
+
+/* Mines grid */
+.mines-grid { display: grid; gap: 6px; }
+.mine-cell {
+  aspect-ratio: 1;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  transition: all 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.mine-cell:hover:not(.revealed):not(.mine-hit) { border-color: var(--accent2); background: rgba(37,99,255,0.1); transform: scale(1.04); }
+.mine-cell.safe { background: rgba(0,230,118,0.08); border-color: rgba(0,230,118,0.3); color: var(--green); }
+.mine-cell.mine-hit { background: rgba(255,61,90,0.12); border-color: var(--red); animation: shake 0.3s; }
+.mine-cell.revealed { cursor: default; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+
+/* Wheel */
+.wheel-container { position: relative; display: inline-block; }
+
+/* Stock game */
+.stock-chart { width: 100%; height: 200px; }
+
+/* Cup game */
+.cup-row { display: flex; gap: 20px; justify-content: center; }
+.cup-item { text-align: center; cursor: pointer; }
+.cup-svg { transition: all 0.15s; }
+.cup-item:hover .cup-svg { transform: scale(1.08); filter: drop-shadow(0 0 12px rgba(37,99,255,0.5)); }
+
+/* Cooldown bar */
+.cooldown-bar {
+  width: 100%;
+  height: 3px;
+  background: var(--bg3);
+  border-radius: 3px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.cooldown-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--neon));
+  border-radius: 3px;
+  transition: width 0.1s linear;
+}
+
+/* Multiplier ladder */
+.ladder-steps { display: flex; flex-direction: column-reverse; gap: 4px; }
+.ladder-step {
+  padding: 8px 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+.ladder-step.current { border-color: var(--neon); background: rgba(0,207,255,0.1); color: var(--neon); }
+.ladder-step.passed { background: rgba(0,230,118,0.08); border-color: rgba(0,230,118,0.2); color: var(--green); }
+.ladder-step.future { background: var(--bg3); color: var(--text3); }
+
+/* Color pick */
+.color-options { display: flex; gap: 12px; }
+.color-opt {
+  flex: 1;
+  padding: 20px 10px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 700;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+.color-opt:hover { transform: scale(1.04); }
+.color-opt.red-opt { background: rgba(255,61,90,0.1); border-color: rgba(255,61,90,0.3); color: var(--red); }
+.color-opt.red-opt:hover { background: rgba(255,61,90,0.2); border-color: var(--red); }
+.color-opt.blue-opt { background: rgba(37,99,255,0.1); border-color: rgba(37,99,255,0.3); color: var(--accent2); }
+.color-opt.blue-opt:hover { background: rgba(37,99,255,0.2); border-color: var(--accent2); }
+.color-opt.green-opt { background: rgba(0,230,118,0.1); border-color: rgba(0,230,118,0.3); color: var(--green); }
+.color-opt.green-opt:hover { background: rgba(0,230,118,0.2); border-color: var(--green); }
+
+/* Progress ring */
+.progress-ring { transform: rotate(-90deg); }
+
+/* Reaction game */
+.reaction-area {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 16px;
+  transition: all 0.1s;
+  user-select: none;
+}
+
+/* Tiles memory */
+.memory-grid { display: grid; gap: 8px; }
+.memory-tile {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.memory-tile:hover { transform: scale(1.04); }
+
+/* Keno grid */
+.keno-grid { display: grid; grid-template-columns: repeat(8,1fr); gap: 6px; }
+.keno-num {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  transition: all 0.15s;
+}
+.keno-num:hover { border-color: var(--accent2); background: rgba(37,99,255,0.1); }
+.keno-num.selected { background: rgba(37,99,255,0.2); border-color: var(--accent2); color: var(--accent2); }
+.keno-num.hit { background: rgba(0,230,118,0.15); border-color: var(--green); color: var(--green); }
+.keno-num.miss { background: rgba(255,61,90,0.1); border-color: var(--red); color: var(--red); }
+
+/* Dice */
+.dice-face {
+  width: 80px; height: 80px;
+  background: #fff;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  transition: transform 0.1s;
+}
+.dice-rolling { animation: diceRoll 0.6s linear; }
+@keyframes diceRoll {
+  0%{transform:rotate(0) scale(1)} 25%{transform:rotate(90deg) scale(0.8)} 50%{transform:rotate(180deg) scale(1.1)} 75%{transform:rotate(270deg) scale(0.9)} 100%{transform:rotate(360deg) scale(1)}
+}
+
+/* Scratch card */
+.scratch-card {
+  width: 200px;
+  height: 120px;
+  border-radius: 12px;
+  position: relative;
+  cursor: crosshair;
+  overflow: hidden;
+}
+.scratch-prize {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 900;
+  border-radius: 12px;
+}
+.scratch-layer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #555, #777);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 13px;
+  font-weight: 600;
+  user-select: none;
+  transition: opacity 0.5s;
+}
+
+/* Higher Lower */
+.card-reveal {
+  width: 100px;
+  height: 140px;
+  border-radius: 12px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.higher-lower-btns { display: flex; gap: 16px; }
+.hl-btn {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.hl-higher { background: linear-gradient(135deg, var(--green), #00a844); color: #fff; }
+.hl-lower { background: linear-gradient(135deg, var(--red), #aa0022); color: #fff; }
+.hl-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+
+/* Slots */
+.slot-reel {
+  width: 70px;
+  height: 70px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--bg3);
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  position: relative;
+}
+.slot-reel.spinning .slot-sym {
+  animation: slotSpin 0.15s linear infinite;
+}
+@keyframes slotSpin {
+  0%{transform:translateY(-100%)} 100%{transform:translateY(100%)}
+}
+
+/* Crash bar */
+.crash-track {
+  width: 100%;
+  height: 8px;
+  background: var(--bg3);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 10px 0;
+}
+.crash-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.05s linear;
+}
+
+/* Number guess */
+.guess-input {
+  width: 120px;
+  padding: 12px;
+  background: var(--bg3);
+  border: 2px solid var(--border2);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 22px;
+  font-weight: 800;
+  text-align: center;
+  outline: none;
+}
+.guess-input:focus { border-color: var(--accent2); }
+
+/* Roulette numbers */
+.roulette-bets { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.rou-bet-btn {
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.15s;
+}
+.rou-bet-btn.rou-red { background: rgba(200,0,0,0.15); border-color: rgba(200,0,0,0.3); color: #ff6060; }
+.rou-bet-btn.rou-black { background: rgba(80,80,80,0.15); border-color: rgba(100,100,100,0.3); color: #ccc; }
+.rou-bet-btn.rou-green { background: rgba(0,160,0,0.15); border-color: rgba(0,160,0,0.3); color: var(--green); }
+.rou-bet-btn.rou-even, .rou-bet-btn.rou-odd, .rou-bet-btn.rou-half { background: rgba(37,99,255,0.1); border-color: rgba(37,99,255,0.3); color: var(--accent2); }
+.rou-bet-btn.selected { box-shadow: 0 0 10px currentColor; transform: scale(1.06); }
+
+/* Hold'em table */
+.holdem-community { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.poker-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.poker-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.poker-fold { background: rgba(255,61,90,0.15); color: var(--red); border: 1px solid rgba(255,61,90,0.3); }
+.poker-call { background: rgba(0,230,118,0.1); color: var(--green); border: 1px solid rgba(0,230,118,0.3); }
+.poker-raise { background: rgba(37,99,255,0.15); color: var(--accent2); border: 1px solid rgba(37,99,255,0.3); }
+.poker-btn:hover { transform: translateY(-1px); filter: brightness(1.2); }
+.poker-info { font-size: 12px; color: var(--text2); text-align: center; padding: 8px; background: var(--bg3); border-radius: 8px; margin-top: 8px; line-height: 1.5; }
+
+/* Balloon */
+.balloon-wrap { position: relative; display: flex; align-items: flex-end; justify-content: center; flex: 1; }
+
+/* Tower climb */
+.tower-row { display: flex; gap: 8px; justify-content: center; margin: 3px 0; }
+.tower-cell {
+  width: 60px;
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: var(--bg3);
+  font-weight: 700;
+}
+.tower-cell:hover:not(.cleared):not(.bomb-cell) { border-color: var(--accent2); background: rgba(37,99,255,0.1); }
+.tower-cell.cleared { background: rgba(0,230,118,0.1); border-color: var(--green); color: var(--green); cursor: default; }
+.tower-cell.bomb-cell { background: rgba(255,61,90,0.12); border-color: var(--red); cursor: default; }
+.tower-cell.current-row { border-color: var(--neon); box-shadow: 0 0 8px rgba(0,207,255,0.3); }
+
+/* Coin flip */
+.coin {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  font-weight: 900;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  transition: all 0.1s;
+}
+.coin.heads { background: linear-gradient(135deg, var(--gold), #c8a000); color: #6b4c00; }
+.coin.tails { background: linear-gradient(135deg, #aaa, #666); color: #333; }
+.coin.flipping { animation: coinFlip 0.6s linear; }
+@keyframes coinFlip {
+  0%{transform:rotateY(0) scale(1)} 50%{transform:rotateY(90deg) scale(0.6)} 100%{transform:rotateY(180deg) scale(1)}
+}
+
+/* Pachinko */
+.pachinko-pegs { position: relative; }
+
+/* Color Wheel segments */
+.segment-label { font-size: 10px; font-weight: 700; }
+
+/* Spacer */
+.spacer-sm { height: 10px; }
+.spacer { height: 18px; }
+
+/* Responsive-ish */
+@media (max-width: 768px) {
+  .game-layout { flex-direction: column; padding: 12px; }
+  .game-sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; }
+  .games-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+}
+</style>
+</head>
+<body>
+
+<!-- Loading Screen -->
+<div id="loadingScreen">
+  <div class="loader-logo">Z-BET</div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+  <div class="loader-text">Loading Casino...</div>
+</div>
+
+<!-- BG Canvas -->
+<canvas id="bgCanvas"></canvas>
+
+<!-- App Root -->
+<div id="appRoot">
+  <!-- TOP NAV -->
+  <nav id="topNav">
+    <div class="nav-logo">Z<span>-Bet</span></div>
+    <div style="display:flex;gap:8px;margin-left:16px;">
+      <button onclick="showHome()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:13px;font-weight:600;padding:6px 12px;border-radius:8px;transition:all 0.2s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text2)'">Home</button>
+    </div>
+    <div class="nav-sep"></div>
+    <div class="nav-stat">
+      <span class="nav-stat-label">Deposits</span>
+      <span class="nav-stat-val" id="navDepositCount">0</span>
+    </div>
+    <div class="nav-stat">
+      <span class="nav-stat-label">Total Deposited</span>
+      <span class="nav-stat-val" id="navTotalDeposited">$0</span>
+    </div>
+    <div id="balanceDisplay" onclick="openDeposit()">
+      <div>
+        <div class="bal-label">Balance</div>
+        <div style="display:flex;align-items:baseline;gap:4px;">
+          <span class="bal-currency">$</span>
+          <span class="bal-amount" id="balanceNum">1,000.00</span>
+        </div>
+      </div>
+    </div>
+    <button id="depositBtn" onclick="openDeposit()">+ Deposit</button>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <div id="mainContent">
+    <!-- HOME SCREEN -->
+    <div id="homeScreen" class="screen active">
+      <div class="home-hero">
+        <h1><span>Z-Bet Casino</span></h1>
+        <p>Premium Games · Fair Play · Instant Wins</p>
+      </div>
+
+      <div class="section-title">Featured Games</div>
+      <div class="games-grid" id="gamesGrid"></div>
+
+      <div class="section-title">More Games</div>
+      <div class="games-grid" id="gamesGrid2"></div>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="gameScreen" class="screen">
+      <div class="game-header">
+        <div class="back-btn" onclick="showHome()">←</div>
+        <div>
+          <div class="game-header-name" id="gameHeaderName"></div>
+          <div class="game-header-tag" id="gameHeaderTag"></div>
+        </div>
+      </div>
+      <div class="game-layout">
+        <div class="game-main" id="gameMain"></div>
+        <div class="game-sidebar" id="gameSidebar"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Deposit Modal -->
+<div class="modal-overlay" id="depositModal">
+  <div class="modal">
+    <h2>💳 Deposit Funds</h2>
+    <p>Add funds to your Z-Bet balance. Instant processing.</p>
+    <input class="modal-input" type="number" id="depositInput" placeholder="Enter amount..." min="1" max="999999">
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <button class="bet-quick-btn" onclick="setDepositQuick(50)">$50</button>
+      <button class="bet-quick-btn" onclick="setDepositQuick(100)">$100</button>
+      <button class="bet-quick-btn" onclick="setDepositQuick(500)">$500</button>
+      <button class="bet-quick-btn" onclick="setDepositQuick(1000)">$1K</button>
+      <button class="bet-quick-btn" onclick="setDepositQuick(5000)">$5K</button>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-primary" onclick="confirmDeposit()">Deposit</button>
+      <button class="modal-btn-cancel" onclick="closeDeposit()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Mockery Overlay -->
+<div id="mockeryOverlay">
+  <div id="mockeryEmoji">😂</div>
+</div>
+
+<!-- Toast Container -->
+<div id="toastContainer"></div>
+
+<script>
+// ========== STATE ==========
+const STATE = {
+  balance: 1000,
+  depositCount: 0,
+  totalDeposited: 0,
+  currentGame: null,
+  lastActivity: 0,
+};
+
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem('zbet_state') || '{}');
+    if (s.balance !== undefined) STATE.balance = s.balance;
+    if (s.depositCount !== undefined) STATE.depositCount = s.depositCount;
+    if (s.totalDeposited !== undefined) STATE.totalDeposited = s.totalDeposited;
+  } catch(e) {}
+}
+function saveState() {
+  localStorage.setItem('zbet_state', JSON.stringify({
+    balance: STATE.balance,
+    depositCount: STATE.depositCount,
+    totalDeposited: STATE.totalDeposited,
+  }));
+}
+
+// ========== BALANCE ==========
+let balanceAnimFrame = null;
+function updateBalanceDisplay(newBal, animate = true) {
+  const el = document.getElementById('balanceNum');
+  if (!animate) { el.textContent = fmt(newBal); return; }
+  const start = parseFloat(el.textContent.replace(/,/g, '')) || 0;
+  const diff = newBal - start;
+  const dur = 600;
+  const t0 = performance.now();
+  if (balanceAnimFrame) cancelAnimationFrame(balanceAnimFrame);
+  function tick(t) {
+    const p = Math.min((t - t0) / dur, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    el.textContent = fmt(start + diff * ease);
+    if (p < 1) balanceAnimFrame = requestAnimationFrame(tick);
+  }
+  balanceAnimFrame = requestAnimationFrame(tick);
+}
+function fmt(n) {
+  return Math.max(0, n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function updateNav() {
+  document.getElementById('navDepositCount').textContent = STATE.depositCount;
+  document.getElementById('navTotalDeposited').textContent = '$' + fmt(STATE.totalDeposited);
+  updateBalanceDisplay(STATE.balance);
+}
+
+function winBet(amount, gameEl) {
+  STATE.balance += amount;
+  saveState();
+  updateNav();
+  floatChip('+$' + fmt(amount), 'win', gameEl);
+  showToast('Won $' + fmt(amount), 'win');
+}
+function loseBet(amount, gameEl) {
+  STATE.balance -= amount;
+  if (STATE.balance < 0) STATE.balance = 0;
+  saveState();
+  updateNav();
+  floatChip('-$' + fmt(amount), 'lose', gameEl);
+  showToast('Lost $' + fmt(amount), 'lose');
+}
+
+function floatChip(text, type, el) {
+  const chip = document.createElement('div');
+  chip.className = 'float-chip ' + type;
+  chip.textContent = text;
+  if (el) {
+    const r = el.getBoundingClientRect();
+    chip.style.left = (r.left + r.width/2 - 30) + 'px';
+    chip.style.top = (r.top + r.height/2) + 'px';
+  } else {
+    chip.style.left = '50%';
+    chip.style.top = '50%';
+  }
+  document.body.appendChild(chip);
+  setTimeout(() => chip.remove(), 1100);
+}
+
+// ========== TOAST ==========
+function showToast(msg, type = 'info', dur = 2200) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, dur);
+}
+
+// ========== DEPOSIT ==========
+function openDeposit() {
+  document.getElementById('depositModal').classList.add('open');
+  document.getElementById('depositInput').value = '';
+  document.getElementById('depositInput').focus();
+}
+function closeDeposit() {
+  document.getElementById('depositModal').classList.remove('open');
+}
+function setDepositQuick(v) { document.getElementById('depositInput').value = v; }
+function confirmDeposit() {
+  const v = parseFloat(document.getElementById('depositInput').value);
+  if (!v || v <= 0) { showToast('Enter a valid amount', 'info'); return; }
+  STATE.balance += v;
+  STATE.depositCount++;
+  STATE.totalDeposited += v;
+  saveState();
+  closeDeposit();
+  updateNav();
+  showMockery();
+  showToast('Deposited $' + fmt(v), 'info');
+}
+function showMockery() {
+  const ov = document.getElementById('mockeryOverlay');
+  ov.classList.add('show');
+  setTimeout(() => {
+    ov.style.transition = 'opacity 0.5s';
+    ov.style.opacity = '0';
+    setTimeout(() => {
+      ov.classList.remove('show');
+      ov.style.opacity = '';
+      ov.style.transition = '';
+    }, 500);
+  }, 1000);
+}
+
+// ========== BG CANVAS ==========
+(function() {
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [], time = 0;
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      x: Math.random() * 2000,
+      y: Math.random() * 2000,
+      r: Math.random() * 1.5 + 0.3,
+      vx: (Math.random() - 0.5) * 0.15,
+      vy: (Math.random() - 0.5) * 0.15,
+      o: Math.random() * 0.4 + 0.05,
+    });
+  }
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    // subtle radial glow
+    const grd = ctx.createRadialGradient(W/2, H*0.4, 0, W/2, H*0.4, W*0.6);
+    grd.addColorStop(0, 'rgba(37,99,255,0.04)');
+    grd.addColorStop(1, 'transparent');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, W, H);
+    // particles
+    for (const p of particles) {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < -5) p.x = W + 5; if (p.x > W + 5) p.x = -5;
+      if (p.y < -5) p.y = H + 5; if (p.y > H + 5) p.y = -5;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(100,160,255,${p.o})`;
+      ctx.fill();
+    }
+    time++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ========== GAME DEFINITIONS ==========
+const GAMES = [
+  { id: 'blackjack', name: 'Blackjack', tag: 'Cards', color: '#1a3a8f', icon: 'bj' },
+  { id: 'roulette', name: 'Roulette', tag: 'Table', color: '#1a4a2f', icon: 'rl' },
+  { id: 'aviator', name: 'Aviator', tag: 'Crash', color: '#2a1a5f', icon: 'av' },
+  { id: 'plinko', name: 'Plinko', tag: 'Physics', color: '#2a1f00', icon: 'pl' },
+  { id: 'mines', name: 'Mines', tag: 'Strategy', color: '#3a0a10', icon: 'mi' },
+  { id: 'holdem', name: 'Texas Hold\'em', tag: 'Poker', color: '#0a3a1a', icon: 'th' },
+  { id: 'stocks', name: 'Stock Predictor', tag: 'Prediction', color: '#0a2a3a', icon: 'st' },
+  { id: 'cups', name: 'Shell Game', tag: 'Reflex', color: '#3a2a0a', icon: 'cu' },
+  { id: 'chicken', name: 'Chicken!', tag: 'Reaction', color: '#2a3a0a', icon: 'ch' },
+  { id: 'slots', name: 'Slots', tag: 'Classic', color: '#3a0a3a', icon: 'sl' },
+  { id: 'coinflip', name: 'Coin Flip', tag: 'Simple', color: '#1a3a3a', icon: 'cf' },
+  { id: 'dice', name: 'Dice Roll', tag: 'Classic', color: '#3a1a0a', icon: 'di' },
+  { id: 'wheel', name: 'Fortune Wheel', tag: 'Wheel', color: '#0a0a3a', icon: 'fw' },
+  { id: 'keno', name: 'Keno', tag: 'Numbers', color: '#2a0a3a', icon: 'ke' },
+  { id: 'higher', name: 'Higher or Lower', tag: 'Cards', color: '#0a3a2a', icon: 'hl' },
+  { id: 'ladder', name: 'Risk Ladder', tag: 'Risk', color: '#3a1a1a', icon: 'rl2' },
+  { id: 'tower', name: 'Tower Climb', tag: 'Strategy', color: '#1a1a3a', icon: 'tc' },
+  { id: 'scratch', name: 'Scratch Card', tag: 'Instant', color: '#2a3a1a', icon: 'sc' },
+  { id: 'colors', name: 'Color Crash', tag: 'Quick', color: '#3a0a2a', icon: 'cc' },
+  { id: 'reaction', name: 'Reaction Test', tag: 'Reflex', color: '#0a2a1a', icon: 'rt' },
+  { id: 'memory', name: 'Memory Tiles', tag: 'Memory', color: '#1a0a3a', icon: 'mt' },
+  { id: 'crash2', name: 'Crash X', tag: 'Crash', color: '#2a0a0a', icon: 'cx' },
+  { id: 'guess', name: 'Number Guess', tag: 'Prediction', color: '#0a3a3a', icon: 'ng' },
+  { id: 'balloon', name: 'Balloon Pop', tag: 'Risk', color: '#1a2a0a', icon: 'bp' },
+];
+
+// SVG thumbnails per game
+const GAME_SVGS = {
+  bj: `<svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="8" width="30" height="44" rx="4" fill="#fff"/><text x="14" y="28" font-size="14" font-weight="900" fill="#e00">A</text><text x="14" y="44" font-size="16">♥</text><rect x="36" y="18" width="30" height="44" rx="4" fill="#fff"/><text x="40" y="38" font-size="14" font-weight="900" fill="#111">K</text><text x="40" y="54" font-size="16">♠</text></svg>`,
+  rl: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="42" fill="#0a4a2a" stroke="#3a8a5a" stroke-width="3"/><circle cx="50" cy="50" r="28" fill="none" stroke="#5ab" stroke-width="1.5" stroke-dasharray="4 3"/><circle cx="50" cy="50" r="8" fill="#e00"/><line x1="50" y1="10" x2="50" y2="50" stroke="#ffcc00" stroke-width="2" stroke-linecap="round" transform="rotate(60,50,50)"/></svg>`,
+  av: `<svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg"><path d="M5 65 Q20 60 40 45 Q55 35 70 20 L85 15 L80 28 Q65 38 55 50 Q38 66 5 65Z" fill="#4466ff"/><path d="M70 20 L88 12 L84 30Z" fill="#00cfff"/><circle cx="45" cy="42" r="3" fill="#fff"/></svg>`,
+  pl: `<svg viewBox="0 0 100 90" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="25" r="4" fill="#6af"/><circle cx="40" cy="25" r="4" fill="#6af"/><circle cx="60" cy="25" r="4" fill="#6af"/><circle cx="80" cy="25" r="4" fill="#6af"/><circle cx="30" cy="42" r="4" fill="#6af"/><circle cx="50" cy="42" r="4" fill="#6af"/><circle cx="70" cy="42" r="4" fill="#6af"/><circle cx="40" cy="59" r="4" fill="#6af"/><circle cx="60" cy="59" r="4" fill="#6af"/><circle cx="50" cy="10" r="5" fill="#ffcc00"/></svg>`,
+  mi: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="5" width="28" height="28" rx="4" fill="#1a2040"/><rect x="36" y="5" width="28" height="28" rx="4" fill="#1a2040"/><rect x="67" y="5" width="28" height="28" rx="4" fill="#1a2040"/><rect x="5" y="36" width="28" height="28" rx="4" fill="#1a2040"/><text x="43" y="57" font-size="22" text-anchor="middle">💣</text><rect x="67" y="36" width="28" height="28" rx="4" fill="#1a2040"/><rect x="5" y="67" width="28" height="28" rx="4" fill="#2a5a3a"/><text x="19" y="86" font-size="14" text-anchor="middle" fill="#0f6">✓</text><rect x="36" y="67" width="28" height="28" rx="4" fill="#1a2040"/><rect x="67" y="67" width="28" height="28" rx="4" fill="#1a2040"/></svg>`,
+  th: `<svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="55" rx="46" ry="22" fill="#0a5030" stroke="#2a7a50" stroke-width="2"/><rect x="15" y="30" width="20" height="30" rx="3" fill="#fff"/><text x="18" y="46" font-size="11" font-weight="900" fill="#e00">A♥</text><rect x="65" y="30" width="20" height="30" rx="3" fill="#fff"/><text x="68" y="46" font-size="11" font-weight="900" fill="#111">K♠</text><rect x="38" y="22" width="16" height="24" rx="3" fill="#2a6ae0"/><rect x="57" y="22" width="16" height="24" rx="3" fill="#2a6ae0"/><rect x="28" y="22" width="16" height="24" rx="3" fill="#2a6ae0"/></svg>`,
+  st: `<svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg"><polyline points="5,65 20,50 35,55 50,30 65,35 80,15 95,20" fill="none" stroke="#0f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="30" r="4" fill="#ffcc00"/><line x1="5" y1="70" x2="95" y2="70" stroke="#446" stroke-width="1"/></svg>`,
+  cu: `<svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg"><path d="M10 60 Q10 35 25 35 L35 35 Q50 35 50 60Z" fill="#884422"/><path d="M37 60 Q37 35 52 35 L62 35 Q77 35 77 60Z" fill="#884422"/><path d="M64 60 Q64 35 79 35 L89 35 Q104 35 104 60Z" fill="#884422"/><circle cx="50" cy="67" r="4" fill="#ffcc00"/><line x1="5" y1="62" x2="95" y2="62" stroke="#664422" stroke-width="2"/></svg>`,
+  ch: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><text x="50" y="60" font-size="52" text-anchor="middle">🐔</text><circle cx="75" cy="28" r="12" fill="rgba(255,50,50,0.3)" stroke="#f55" stroke-width="2"/><text x="75" y="33" font-size="12" text-anchor="middle" font-weight="900" fill="#f88">!</text></svg>`,
+  sl: `<svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="10" width="90" height="60" rx="10" fill="#1a0a2a" stroke="#6a2a8a" stroke-width="2"/><rect x="14" y="20" width="20" height="40" rx="5" fill="#0a0015"/><rect x="40" y="20" width="20" height="40" rx="5" fill="#0a0015"/><rect x="66" y="20" width="20" height="40" rx="5" fill="#0a0015"/><text x="24" y="46" font-size="18" text-anchor="middle">🍒</text><text x="50" y="46" font-size="18" text-anchor="middle">💎</text><text x="76" y="46" font-size="18" text-anchor="middle">🍒</text></svg>`,
+  cf: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="38" fill="url(#cg)"/><defs><radialGradient id="cg"><stop offset="0%" stop-color="#ffcc00"/><stop offset="100%" stop-color="#c89000"/></radialGradient></defs><text x="50" y="60" font-size="30" text-anchor="middle" font-weight="900" fill="#6b4c00">$</text></svg>`,
+  di: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="15" y="15" width="70" height="70" rx="12" fill="#fff"/><circle cx="35" cy="35" r="6" fill="#111"/><circle cx="65" cy="65" r="6" fill="#111"/><circle cx="65" cy="35" r="6" fill="#111"/><circle cx="35" cy="65" r="6" fill="#111"/></svg>`,
+  fw: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="44" fill="none" stroke="#334" stroke-width="1"/><path d="M50 50 L50 6 A44 44 0 0 1 88 72Z" fill="#e00" opacity="0.9"/><path d="M50 50 L88 72 A44 44 0 0 1 12 72Z" fill="#0c0" opacity="0.9"/><path d="M50 50 L12 72 A44 44 0 0 1 50 6Z" fill="#44f" opacity="0.9"/><circle cx="50" cy="50" r="8" fill="#111" stroke="#888" stroke-width="2"/></svg>`,
+  ke: `<svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="5" width="90" height="70" rx="8" fill="#0a0a20" stroke="#334" stroke-width="1.5"/><text x="16" y="26" font-size="10" font-weight="700" fill="#888">1</text><text x="30" y="26" font-size="10" font-weight="700" fill="#0f6">7</text><text x="44" y="26" font-size="10" font-weight="700" fill="#888">13</text><text x="60" y="26" font-size="10" font-weight="700" fill="#0f6">19</text><text x="75" y="26" font-size="10" font-weight="700" fill="#888">25</text><text x="16" y="46" font-size="10" font-weight="700" fill="#0f6">31</text><text x="30" y="46" font-size="10" font-weight="700" fill="#888">37</text><text x="44" y="46" font-size="10" font-weight="700" fill="#888">43</text><text x="60" y="46" font-size="10" font-weight="700" fill="#0f6">49</text><text x="75" y="46" font-size="10" font-weight="700" fill="#888">55</text></svg>`,
+  hl: `<svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="10" width="26" height="38" rx="4" fill="#fff"/><text x="24" y="28" font-size="11" font-weight="900" fill="#e00">7</text><text x="24" y="40" font-size="12">♦</text><text x="28" y="70" font-size="10" font-weight="700" fill="#0f6">▲ Higher</text><text x="58" y="70" font-size="10" font-weight="700" fill="#f55">▼ Lower</text><text x="60" y="35" font-size="22" font-weight="900" fill="#6af">?</text></svg>`,
+  rl2: `<svg viewBox="0 0 100 90" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="68" width="90" height="14" rx="4" fill="#1a2040"/><text x="50" y="79" text-anchor="middle" font-size="9" font-weight="700" fill="#888">1.2x</text><rect x="5" y="51" width="90" height="14" rx="4" fill="#1a2050"/><text x="50" y="62" text-anchor="middle" font-size="9" font-weight="700" fill="#aaa">2x</text><rect x="5" y="34" width="90" height="14" rx="4" fill="#2a3070"/><text x="50" y="45" text-anchor="middle" font-size="9" font-weight="700" fill="#6af">5x</text><rect x="5" y="17" width="90" height="14" rx="4" fill="#3a2060"/><text x="50" y="28" text-anchor="middle" font-size="9" font-weight="700" fill="#fa0">10x</text><rect x="5" y="0" width="90" height="14" rx="4" fill="#4a1040"/><text x="50" y="11" text-anchor="middle" font-size="9" font-weight="700" fill="#f55">25x</text></svg>`,
+  tc: `<svg viewBox="0 0 100 90" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="72" width="36" height="14" rx="3" fill="#1a3060"/><rect x="54" y="72" width="36" height="14" rx="3" fill="#1a3060"/><rect x="10" y="54" width="36" height="14" rx="3" fill="#1a3060"/><rect x="54" y="54" width="36" height="14" rx="3" fill="#3a3060"/><rect x="10" y="36" width="36" height="14" rx="3" fill="#3a3060"/><rect x="54" y="36" width="36" height="14" rx="3" fill="#2a4060"/><rect x="10" y="18" width="36" height="14" rx="3" fill="#2a4080"/><rect x="54" y="18" width="36" height="14" rx="3" fill="#1a3060"/><rect x="10" y="0" width="36" height="14" rx="3" fill="#1a3060"/><rect x="54" y="0" width="36" height="14" rx="3" fill="#4a2040"/><text x="28" y="45" text-anchor="middle" font-size="9" fill="#0f6" font-weight="700">✓</text></svg>`,
+  sc: `<svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="15" width="80" height="50" rx="8" fill="#888" stroke="#aaa" stroke-width="1.5"/><rect x="15" y="20" width="70" height="40" rx="5" fill="#666"/><text x="50" y="44" text-anchor="middle" font-size="14" font-weight="700" fill="#bbb">SCRATCH</text><text x="50" y="58" text-anchor="middle" font-size="10" fill="#999">& WIN</text></svg>`,
+  cc: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="42" fill="#1a0a2a"/><path d="M50 50 L50 10 A40 40 0 0 1 84 70Z" fill="#e00"/><path d="M50 50 L84 70 A40 40 0 0 1 16 70Z" fill="#0a0"/><path d="M50 50 L16 70 A40 40 0 0 1 50 10Z" fill="#44f"/><circle cx="50" cy="50" r="7" fill="#222" stroke="#666" stroke-width="2"/><line x1="50" y1="10" x2="50" y2="2" stroke="#fff" stroke-width="2.5" stroke-linecap="round" transform="rotate(-10,50,50)"/></svg>`,
+  rt: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="44" fill="rgba(0,200,100,0.15)" stroke="rgba(0,200,100,0.3)" stroke-width="2"/><text x="50" y="57" font-size="28" text-anchor="middle">⚡</text><text x="50" y="80" font-size="10" font-weight="700" fill="#0f6" text-anchor="middle">TAP!</text></svg>`,
+  mt: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="5" width="28" height="28" rx="4" fill="#3a1a6a"/><rect x="36" y="5" width="28" height="28" rx="4" fill="#1a1a3a"/><rect x="67" y="5" width="28" height="28" rx="4" fill="#3a1a6a"/><rect x="5" y="36" width="28" height="28" rx="4" fill="#1a1a3a"/><rect x="36" y="36" width="28" height="28" rx="4" fill="#3a1a6a"/><rect x="67" y="36" width="28" height="28" rx="4" fill="#1a1a3a"/><rect x="5" y="67" width="28" height="28" rx="4" fill="#1a1a3a"/><rect x="36" y="67" width="28" height="28" rx="4" fill="#1a1a3a"/><rect x="67" y="67" width="28" height="28" rx="4" fill="#3a1a6a"/></svg>`,
+  cx: `<svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg"><polyline points="5,70 15,68 25,65 35,60 45,50 55,30 65,15 70,8" fill="none" stroke="#0cf" stroke-width="2.5" stroke-linecap="round"/><circle cx="70" cy="8" r="5" fill="#f55"/><text x="75" y="14" font-size="10" fill="#f55" font-weight="700">CRASH</text><line x1="5" y1="72" x2="95" y2="72" stroke="#336" stroke-width="1"/></svg>`,
+  ng: `<svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="40" r="32" fill="none" stroke="#6af" stroke-width="2" stroke-dasharray="6 4"/><text x="50" y="47" font-size="28" text-anchor="middle" font-weight="900" fill="#fff">?</text><text x="50" y="70" font-size="10" text-anchor="middle" fill="#6af">1 - 100</text></svg>`,
+  bp: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="48" rx="26" ry="32" fill="rgba(255,80,150,0.7)" stroke="rgba(255,120,180,0.9)" stroke-width="1.5"/><path d="M50 80 Q52 88 50 95" fill="none" stroke="rgba(200,150,255,0.7)" stroke-width="1.5" stroke-linecap="round"/><text x="50" y="52" text-anchor="middle" font-size="18" fill="rgba(255,200,220,0.9)">🎈</text></svg>`,
+};
+
+// ========== GAME CARDS ==========
+function buildGameCards() {
+  const g1 = document.getElementById('gamesGrid');
+  const g2 = document.getElementById('gamesGrid2');
+  const featured = GAMES.slice(0, 12);
+  const rest = GAMES.slice(12);
+  featured.forEach(g => g1.appendChild(makeCard(g)));
+  rest.forEach(g => g2.appendChild(makeCard(g)));
+}
+
+function makeCard(g) {
+  const card = document.createElement('div');
+  card.className = 'game-card';
+  const svgStr = GAME_SVGS[g.icon] || '';
+  card.innerHTML = `
+    <div class="game-thumb" style="background:linear-gradient(135deg,${g.color}66,${g.color}22);">
+      ${svgStr}
+      <div class="game-thumb-overlay"></div>
+      <div class="game-play-btn">Play Now</div>
+    </div>
+    <div class="game-info">
+      <div class="game-name">${g.name}</div>
+      <div class="game-tag">${g.tag}</div>
+    </div>
+  `;
+  card.onclick = () => openGame(g.id);
+  return card;
+}
+
+// ========== NAVIGATION ==========
+function showHome() {
+  if (STATE.currentGame && GAME_INSTANCES[STATE.currentGame] && GAME_INSTANCES[STATE.currentGame].destroy) {
+    GAME_INSTANCES[STATE.currentGame].destroy();
+  }
+  STATE.currentGame = null;
+  document.getElementById('homeScreen').classList.add('active');
+  document.getElementById('gameScreen').classList.remove('active');
+}
+
+function openGame(id) {
+  if (STATE.currentGame && GAME_INSTANCES[STATE.currentGame] && GAME_INSTANCES[STATE.currentGame].destroy) {
+    GAME_INSTANCES[STATE.currentGame].destroy();
+  }
+  STATE.currentGame = id;
+  const g = GAMES.find(x => x.id === id);
+  document.getElementById('gameHeaderName').textContent = g.name;
+  document.getElementById('gameHeaderTag').textContent = g.tag + ' Game';
+  document.getElementById('homeScreen').classList.remove('active');
+  document.getElementById('gameScreen').classList.add('active');
+  document.getElementById('gameMain').innerHTML = '';
+  document.getElementById('gameSidebar').innerHTML = '';
+  const inst = GAME_RUNNERS[id];
+  if (inst) {
+    GAME_INSTANCES[id] = inst();
+  }
+}
+
+const GAME_INSTANCES = {};
+
+// ========== BET UTILITY ==========
+function makeBetPanel(containerId, opts = {}) {
+  const sidebar = document.getElementById(containerId || 'gameSidebar');
+  const defaultBet = Math.min(10, STATE.balance);
+  sidebar.innerHTML = `
+    <div class="bet-panel">
+      <div class="bet-panel-title">Place Bet</div>
+      <div class="bet-input-wrap">
+        <input class="bet-input" id="betInput" type="number" value="${defaultBet}" min="0.01" step="any">
+        <button class="btn-half" onclick="adjustBet(0.5)">½</button>
+        <button class="btn-dbl" onclick="adjustBet(2)">2×</button>
+        <button class="btn-max" onclick="maxBet()">MAX</button>
+      </div>
+      <div class="spacer-sm"></div>
+      <div class="bet-quick">
+        <button class="bet-quick-btn" onclick="setBet(1)">$1</button>
+        <button class="bet-quick-btn" onclick="setBet(5)">$5</button>
+        <button class="bet-quick-btn" onclick="setBet(10)">$10</button>
+        <button class="bet-quick-btn" onclick="setBet(25)">$25</button>
+        <button class="bet-quick-btn" onclick="setBet(50)">$50</button>
+        <button class="bet-quick-btn" onclick="setBet(100)">$100</button>
+      </div>
+      ${opts.extra || ''}
+      <button class="play-btn" id="playBtn" onclick="${opts.onPlay || 'window._gameBet && window._gameBet()'}">
+        ${opts.label || 'Place Bet'}
+      </button>
+      <div class="cooldown-bar"><div class="cooldown-fill" id="cooldownFill" style="width:0"></div></div>
+    </div>
+    <div class="result-panel" id="resultPanel">
+      <div class="result-label">Result</div>
+      <div class="result-val" id="resultVal">—</div>
+    </div>
+    <div class="history-panel">
+      <div class="history-title">Recent</div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+  `;
+}
+
+function getBet() {
+  const v = parseFloat(document.getElementById('betInput')?.value || 0);
+  if (isNaN(v) || v <= 0) { showToast('Enter a valid bet', 'info'); return 0; }
+  if (v > STATE.balance) { showToast('Insufficient balance', 'info'); return 0; }
+  return v;
+}
+
+function setBet(v) {
+  const inp = document.getElementById('betInput');
+  if (inp) inp.value = Math.min(v, STATE.balance);
+}
+function adjustBet(mult) {
+  const inp = document.getElementById('betInput');
+  if (inp) inp.value = Math.max(0.01, Math.min(parseFloat(inp.value || 0) * mult, STATE.balance)).toFixed(2);
+}
+function maxBet() {
+  const inp = document.getElementById('betInput');
+  if (inp) inp.value = Math.min(STATE.balance * 0.25, STATE.balance).toFixed(2);
+}
+
+let cooldownActive = false;
+function startCooldown(ms = 800) {
+  cooldownActive = true;
+  const btn = document.getElementById('playBtn');
+  if (btn) btn.disabled = true;
+  const fill = document.getElementById('cooldownFill');
+  if (fill) {
+    fill.style.width = '0%';
+    fill.style.transition = `width ${ms}ms linear`;
+    setTimeout(() => fill.style.width = '100%', 10);
+  }
+  setTimeout(() => {
+    cooldownActive = false;
+    if (btn) btn.disabled = false;
+    if (fill) { fill.style.transition = 'none'; fill.style.width = '0'; }
+  }, ms);
+}
+
+function setResult(txt, type) {
+  const el = document.getElementById('resultVal');
+  if (el) { el.textContent = txt; el.className = 'result-val ' + (type || ''); }
+}
+
+let historyItems = [];
+function addHistory(txt, type) {
+  historyItems.unshift({ txt, type });
+  if (historyItems.length > 15) historyItems.pop();
+  const el = document.getElementById('historyList');
+  if (el) {
+    el.innerHTML = historyItems.map(h => `<div class="history-item ${h.type}">${h.txt}</div>`).join('');
+  }
+}
+
+// ========== HOUSE EDGE HELPERS ==========
+function rng() { return Math.random(); }
+// Biased random (house edge built-in)
+function houseRng(houseEdge = 0.03) {
+  return rng() * (1 - houseEdge);
+}
+// Streak detector (reduce wins after streaks)
+const streakTracker = {};
+function trackStreak(gameId, won) {
+  if (!streakTracker[gameId]) streakTracker[gameId] = 0;
+  streakTracker[gameId] = won ? streakTracker[gameId] + 1 : 0;
+  return streakTracker[gameId];
+}
+function getStreakPenalty(gameId) {
+  const s = streakTracker[gameId] || 0;
+  if (s >= 5) return 0.25;
+  if (s >= 3) return 0.12;
+  return 0;
+}
+
+// ========== GAME RUNNERS ==========
+const GAME_RUNNERS = {};
+
+// ===== BLACKJACK =====
+GAME_RUNNERS.blackjack = function() {
+  const suits = ['♠','♥','♦','♣'], ranks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+  let deck = [], playerHand = [], dealerHand = [], inGame = false;
+  function buildDeck() {
+    deck = [];
+    for (let s of suits) for (let r of ranks) deck.push({ s, r });
+    for (let i = deck.length-1; i > 0; i--) { const j = Math.floor(rng()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; }
+  }
+  function cardVal(c) {
+    if (['J','Q','K'].includes(c.r)) return 10;
+    if (c.r === 'A') return 11;
+    return parseInt(c.r);
+  }
+  function handVal(hand) {
+    let v = 0, aces = 0;
+    for (let c of hand) { v += cardVal(c); if (c.r === 'A') aces++; }
+    while (v > 21 && aces > 0) { v -= 10; aces--; }
+    return v;
+  }
+  function cardHTML(c, facedown = false) {
+    if (facedown) return `<div class="playing-card facedown"><div style="font-size:22px;color:#4466ff">?</div></div>`;
+    const red = ['♥','♦'].includes(c.s);
+    return `<div class="playing-card ${red?'red':'black'}"><span class="card-rank">${c.r}</span><span class="card-suit">${c.s}</span></div>`;
+  }
+  function render(dealerHideSecond = true) {
+    const main = document.getElementById('gameMain');
+    const dv = handVal(dealerHideSecond ? [dealerHand[0]] : dealerHand);
+    const pv = handVal(playerHand);
+    main.innerHTML = `
+      <div style="width:100%;padding:24px 20px;display:flex;flex-direction:column;gap:20px;">
+        <div style="text-align:center">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:10px;">Dealer ${dealerHideSecond?'?':'— '+dv}</div>
+          <div class="card-container">${dealerHand.map((c,i)=>cardHTML(c,dealerHideSecond&&i===1)).join('')}</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:10px;">You — ${pv}</div>
+          <div class="card-container">${playerHand.map(c=>cardHTML(c)).join('')}</div>
+        </div>
+      </div>`;
+  }
+  function deal() {
+    const bet = getBet(); if (!bet) return;
+    if (cooldownActive) return;
+    buildDeck();
+    playerHand = [deck.pop(), deck.pop()];
+    dealerHand = [deck.pop(), deck.pop()];
+    inGame = true;
+    render(true);
+    document.getElementById('playBtn').textContent = 'Deal';
+    // Show hit/stand
+    const extra = document.getElementById('bjActions');
+    if (extra) extra.style.display = 'flex';
+    if (handVal(playerHand) === 21) { endGame(bet); }
+  }
+  function hit() {
+    if (!inGame) return;
+    playerHand.push(deck.pop());
+    render(true);
+    if (handVal(playerHand) > 21) endGame(getBet());
+  }
+  function stand() { if (!inGame) return; endGame(getBet()); }
+  function endGame(bet) {
+    inGame = false;
+    // Dealer draws
+    while (handVal(dealerHand) < 17) dealerHand.push(deck.pop());
+    render(false);
+    const pv = handVal(playerHand), dv = handVal(dealerHand);
+    const bjActions = document.getElementById('bjActions');
+    if (bjActions) bjActions.style.display = 'none';
+    let msg, type;
+    // House edge: dealer wins ties > 17
+    if (pv > 21) { msg = 'Bust! -$'+fmt(bet); type='lose'; loseBet(bet, document.getElementById('gameMain')); addHistory('-$'+fmt(bet),'lose'); }
+    else if (dv > 21 || pv > dv) {
+      const streak = trackStreak('bj', true);
+      const pen = getStreakPenalty('bj');
+      const payout = pen > 0 ? bet*(0.95-pen) : bet*0.95;
+      winBet(payout, document.getElementById('gameMain'));
+      msg = 'Win! +$'+fmt(payout); type='win'; addHistory('+$'+fmt(payout),'win');
+    } else if (pv === dv) { msg = 'Push'; type=''; addHistory('Push',''); }
+    else { msg = 'Dealer wins -$'+fmt(bet); type='lose'; loseBet(bet, document.getElementById('gameMain')); addHistory('-$'+fmt(bet),'lose'); }
+    setResult(msg, type);
+    startCooldown(600);
+    document.getElementById('playBtn').textContent = 'Deal Again';
+  }
+  makeBetPanel('gameSidebar', { label: 'Deal', onPlay: 'window._bjDeal()', extra: `
+    <div id="bjActions" style="display:none;gap:8px;margin-bottom:12px;">
+      <button class="poker-btn poker-call" style="flex:1" onclick="window._bjHit()">Hit</button>
+      <button class="poker-btn poker-fold" style="flex:1" onclick="window._bjStand()">Stand</button>
+    </div>` });
+  window._bjDeal = deal; window._bjHit = hit; window._bjStand = stand;
+  document.getElementById('gameMain').innerHTML = `<div style="text-align:center;color:var(--text3);font-size:15px;">Place a bet to deal cards</div>`;
+  return { destroy: () => {} };
+};
+
+// ===== ROULETTE =====
+GAME_RUNNERS.roulette = function() {
+  const RED = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+  let selectedBet = 'red', wheelAngle = 0, spinning = false;
+  const main = document.getElementById('gameMain');
+  main.innerHTML = `<canvas id="rouletteCanvas" width="340" height="340"></canvas>`;
+  const canvas = document.getElementById('rouletteCanvas');
+  const ctx = canvas.getContext('2d');
+  const nums = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
+  function drawWheel(angle) {
+    const cx=170,cy=170,r=155,seg=Math.PI*2/37;
+    ctx.clearRect(0,0,340,340);
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(angle);
+    for(let i=0;i<37;i++) {
+      const n=nums[i],a=i*seg-seg/2;
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,r,a,a+seg); ctx.closePath();
+      ctx.fillStyle = n===0?'#0a6a00': RED.includes(n)?'#aa0000':'#222';
+      ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=0.7; ctx.stroke();
+      ctx.save(); ctx.rotate(a+seg/2); ctx.translate(r*0.78,0);
+      ctx.rotate(Math.PI/2);
+      ctx.fillStyle='#fff'; ctx.font='bold 9px sans-serif'; ctx.textAlign='center';
+      ctx.fillText(n,0,3); ctx.restore();
+    }
+    ctx.restore();
+    // border
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.strokeStyle='rgba(100,140,255,0.4)'; ctx.lineWidth=3; ctx.stroke();
+    // center
+    ctx.beginPath(); ctx.arc(cx,cy,14,0,Math.PI*2); ctx.fillStyle='#0a0f20'; ctx.fill(); ctx.strokeStyle='#336'; ctx.lineWidth=2; ctx.stroke();
+    // pointer
+    ctx.beginPath(); ctx.moveTo(cx,cy-r-4); ctx.lineTo(cx-7,cy-r+10); ctx.lineTo(cx+7,cy-r+10); ctx.closePath();
+    ctx.fillStyle='#fff'; ctx.fill();
+  }
+  drawWheel(0);
+  const betTypes = [
+    { id:'red',label:'Red',cls:'rou-red',payout:2 },{ id:'black',label:'Black',cls:'rou-black',payout:2 },
+    { id:'green',label:'Zero',cls:'rou-green',payout:36 },{ id:'even',label:'Even',cls:'rou-even',payout:2 },
+    { id:'odd',label:'Odd',cls:'rou-odd',payout:2 },{ id:'1-18',label:'1-18',cls:'rou-half',payout:2 },
+    { id:'19-36',label:'19-36',cls:'rou-half',payout:2 },
+  ];
+  const sidebar = document.getElementById('gameSidebar');
+  makeBetPanel('gameSidebar', { label: 'Spin', onPlay: 'window._rouSpin()' });
+  // Add bet type buttons before play btn
+  const betPanel = sidebar.querySelector('.bet-panel');
+  const betDiv = document.createElement('div');
+  betDiv.style.cssText = 'margin-bottom:12px;';
+  betDiv.innerHTML = `<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Bet Type</div>
+    <div class="roulette-bets">${betTypes.map(b=>`<button class="rou-bet-btn ${b.cls}${b.id===selectedBet?' selected':''}" onclick="window._rouSetBet('${b.id}',this)">${b.label}</button>`).join('')}</div>`;
+  betPanel.insertBefore(betDiv, betPanel.querySelector('.play-btn'));
+  window._rouSetBet = (id, el) => {
+    selectedBet = id;
+    document.querySelectorAll('.rou-bet-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+  };
+  window._rouSpin = () => {
+    const bet = getBet(); if (!bet || spinning) return;
+    spinning = true;
+    startCooldown(4000);
+    // house-biased result
+    let result;
+    const houseRoll = rng();
+    if (houseRoll < 0.03) { result = 0; } // force 0 occasionally
+    else {
+      const idx = Math.floor(rng() * 37);
+      result = nums[idx];
+    }
+    const resultIdx = nums.indexOf(result);
+    const segSize = Math.PI*2/37;
+    const targetAngle = -resultIdx * segSize - segSize/2;
+    const spins = 5 + rng()*3;
+    const finalAngle = targetAngle + spins * Math.PI * 2;
+    const dur = 3500, t0 = performance.now();
+    const startAngle = wheelAngle;
+    function animate(t) {
+      const p = Math.min((t-t0)/dur, 1);
+      const ease = p < 1 ? 1 - Math.pow(1-p,4) : 1;
+      wheelAngle = startAngle + (finalAngle - startAngle) * ease;
+      drawWheel(wheelAngle);
+      if (p < 1) { requestAnimationFrame(animate); return; }
+      spinning = false;
+      // Determine win
+      const isRed = RED.includes(result);
+      const isBlack = !isRed && result !== 0;
+      const betT = betTypes.find(b => b.id === selectedBet);
+      let won = false;
+      if (selectedBet==='red'&&isRed) won=true;
+      else if (selectedBet==='black'&&isBlack) won=true;
+      else if (selectedBet==='green'&&result===0) won=true;
+      else if (selectedBet==='even'&&result>0&&result%2===0) won=true;
+      else if (selectedBet==='odd'&&result%2===1) won=true;
+      else if (selectedBet==='1-18'&&result>=1&&result<=18) won=true;
+      else if (selectedBet==='19-36'&&result>=19&&result<=36) won=true;
+      if (won) {
+        const payout = bet*(betT.payout-1)*(1-0.027);
+        winBet(payout, canvas); setResult('Won! +$'+fmt(payout),'win'); addHistory('+$'+fmt(payout),'win');
+      } else {
+        loseBet(bet, canvas); setResult('Lost -$'+fmt(bet),'lose'); addHistory('-$'+fmt(bet),'lose');
+      }
+    }
+    requestAnimationFrame(animate);
+  };
+  return { destroy: () => {} };
+};
+
+// ===== AVIATOR =====
+GAME_RUNNERS.aviator = function() {
+  const main = document.getElementById('gameMain');
+  let multiplier = 1.0, crashed = false, gameRunning = false, cashedOut = false;
+  let betAmount = 0, animId = null, speed = 0.004;
+  main.innerHTML = `
+    <div style="width:100%;padding:30px;display:flex;flex-direction:column;align-items:center;gap:16px;">
+      <div class="aviator-multi" id="avMulti">1.00×</div>
+      <div class="aviator-desc">Multiplier increases over time.<br>Cash out before the plane crashes!<br>Crash = lose your bet.</div>
+      <canvas id="avCanvas" width="420" height="200" style="border-radius:12px;background:rgba(5,10,30,0.5);border:1px solid var(--border);"></canvas>
+    </div>`;
+  const canvas = document.getElementById('avCanvas');
+  const ctx = canvas.getContext('2d');
+  let points = [[0, 180]];
+  function drawCurve() {
+    ctx.clearRect(0,0,420,200);
+    if (points.length < 2) return;
+    ctx.beginPath();
+    ctx.moveTo(points[0][0], points[0][1]);
+    for (let p of points) ctx.lineTo(p[0], p[1]);
+    ctx.strokeStyle = crashed ? 'rgba(255,61,90,0.8)' : 'rgba(0,207,255,0.8)';
+    ctx.lineWidth = 2.5; ctx.stroke();
+    // fill
+    ctx.lineTo(points[points.length-1][0], 200); ctx.lineTo(0, 200); ctx.closePath();
+    ctx.fillStyle = crashed ? 'rgba(255,61,90,0.08)' : 'rgba(0,207,255,0.06)';
+    ctx.fill();
+    // plane emoji
+    const lx = points[points.length-1][0], ly = points[points.length-1][1];
+    ctx.font = '22px serif'; ctx.fillText('✈️', lx-4, ly-6);
+  }
+  drawCurve();
+  const sidebar = document.getElementById('gameSidebar');
+  makeBetPanel('gameSidebar', { label: 'Fly!', onPlay: 'window._avBet()' });
+  // cashout btn
+  const betPanel = sidebar.querySelector('.bet-panel');
+  const co = document.createElement('button');
+  co.className = 'play-btn cashout'; co.id = 'avCashout'; co.style.display='none'; co.textContent='Cash Out';
+  co.onclick = () => cashOut();
+  betPanel.insertBefore(co, betPanel.querySelector('.play-btn'));
+  function genCrashPoint() {
+    // house edge: crash often between 1.0 and 2.0
+    const r = rng();
+    if (r < 0.04) return 1.0 + rng()*0.1; // early crash
+    const crashMult = 0.97 / (rng()*(1-0.05)); // EV = 0.97
+    return Math.max(1.01, Math.min(crashMult, 50));
+  }
+  let crashAt = 2;
+  window._avBet = () => {
+    if (gameRunning) return;
+    betAmount = getBet(); if (!betAmount) return;
+    gameRunning = true; crashed = false; cashedOut = false;
+    multiplier = 1.0; points = [[0,180]];
+    speed = 0.004;
+    crashAt = genCrashPoint();
+    document.getElementById('avMulti').className = 'aviator-multi';
+    document.getElementById('playBtn').disabled = true;
+    document.getElementById('avCashout').style.display = 'block';
+    let x = 0;
+    function tick() {
+      if (!gameRunning) return;
+      speed += 0.000015;
+      multiplier += speed * multiplier * 0.8;
+      const yRaw = 180 - (multiplier-1)*60;
+      const y = Math.max(10, yRaw);
+      x += 3.2;
+      if (x > 380) { // scroll
+        points = points.map(p => [p[0]-3.2, p[1]]);
+        points.push([380, y]);
+      } else { points.push([x, y]); }
+      drawCurve();
+      document.getElementById('avMulti').textContent = multiplier.toFixed(2) + '×';
+      if (multiplier >= crashAt) { doCrash(); return; }
+      animId = requestAnimationFrame(tick);
+    }
+    animId = requestAnimationFrame(tick);
+  };
+  function cashOut() {
+    if (!gameRunning || crashed || cashedOut) return;
+    cashedOut = true; gameRunning = false;
+    if (animId) cancelAnimationFrame(animId);
+    const payout = betAmount * multiplier * 0.97;
+    winBet(payout, main); setResult('Cashed! +$'+fmt(payout), 'win'); addHistory('+$'+fmt(payout),'win');
+    document.getElementById('avCashout').style.display='none';
+    document.getElementById('playBtn').disabled=false;
+    startCooldown(500);
+  }
+  function doCrash() {
+    crashed = true; gameRunning = false;
+    if (animId) cancelAnimationFrame(animId);
+    document.getElementById('avMulti').className='aviator-multi crashed';
+    document.getElementById('avMulti').textContent = 'CRASHED @ '+multiplier.toFixed(2)+'×';
+    drawCurve();
+    document.getElementById('avCashout').style.display='none';
+    document.getElementById('playBtn').disabled=false;
+    if (!cashedOut) {
+      loseBet(betAmount, main); setResult('Crashed -$'+fmt(betAmount),'lose'); addHistory('-$'+fmt(betAmount),'lose');
+    }
+    startCooldown(800);
+  }
+  return { destroy: () => { if (animId) cancelAnimationFrame(animId); gameRunning = false; } };
+};
+
+// ===== PLINKO =====
+GAME_RUNNERS.plinko = function() {
+  const main = document.getElementById('gameMain');
+  main.innerHTML = `<canvas id="plinkoCanvas" width="400" height="480" style="display:block;margin:auto;"></canvas>`;
+  const canvas = document.getElementById('plinkoCanvas');
+  const ctx = canvas.getContext('2d');
+  const ROWS = 12;
+  const MULT = [16,8,4,2,1.5,1,0.5,1,1.5,2,4,8,16];
+  const pegs = [];
+  for (let r=0; r<ROWS; r++) {
+    const n = r+3;
+    for (let c=0; c<n; c++) {
+      const xOff = (400-(n-1)*34)/2;
+      pegs.push({ x: xOff + c*34, y: 50 + r*34 });
+    }
+  }
+  let balls = [];
+  function drawBoard() {
+    ctx.clearRect(0,0,400,480);
+    // pegs
+    for (let p of pegs) {
+      ctx.beginPath(); ctx.arc(p.x,p.y,5,0,Math.PI*2);
+      ctx.fillStyle='rgba(100,150,255,0.7)'; ctx.fill();
+    }
+    // buckets
+    const bw=400/MULT.length;
+    for (let i=0;i<MULT.length;i++) {
+      const m=MULT[i];
+      const hue = m>=8?40:m>=4?200:m>=2?280:300;
+      ctx.fillStyle=`hsla(${hue},70%,55%,0.15)`;
+      ctx.fillRect(i*bw+1,440,bw-2,36);
+      ctx.strokeStyle=`hsla(${hue},60%,50%,0.4)`;
+      ctx.strokeRect(i*bw+1,440,bw-2,36);
+      ctx.fillStyle=`hsla(${hue},80%,70%,0.9)`;
+      ctx.font='bold 11px sans-serif'; ctx.textAlign='center';
+      ctx.fillText(m+'×', i*bw+bw/2, 463);
+    }
+    // balls
+    for (let b of balls) {
+      ctx.beginPath(); ctx.arc(b.x,b.y,8,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,200,0,0.9)'; ctx.fill();
+      ctx.strokeStyle='rgba(255,160,0,0.6)'; ctx.lineWidth=1.5; ctx.stroke();
+    }
+  }
+  drawBoard();
+  makeBetPanel('gameSidebar', { label: 'Drop Ball', onPlay: 'window._plinkoDrop()' });
+  window._plinkoDrop = () => {
+    const bet = getBet(); if (!bet) return;
+    startCooldown(3000);
+    // Simulate ball path with biased random
+    const ball = { x: 200 + (rng()-0.5)*20, y: 20, vx: 0, vy: 2, path: [] };
+    // Pre-compute landing bucket with house bias
+    let slot = 6; // center default
+    for (let r=0; r<ROWS; r++) {
+      if (rng() < 0.48) slot++; else slot--;
+    }
+    slot = Math.max(0, Math.min(MULT.length-1, Math.round((slot+ROWS)/2)));
+    // Animate
+    const targetX = slot * (400/MULT.length) + (400/MULT.length)/2;
+    balls.push(ball);
+    let tick = 0;
+    const timer = setInterval(() => {
+      tick++;
+      ball.y += 3.5;
+      ball.x += (targetX - ball.x) * 0.04 + (rng()-0.5)*3;
+      // bounce off pegs
+      for (let p of pegs) {
+        const dx=ball.x-p.x, dy=ball.y-p.y;
+        if (Math.sqrt(dx*dx+dy*dy)<14) { ball.x+=dx*0.4+((rng()-0.5)*4); ball.y=p.y+14; }
+      }
+      drawBoard();
+      if (ball.y >= 440) {
+        clearInterval(timer);
+        balls = balls.filter(b=>b!==ball);
+        drawBoard();
+        const m = MULT[slot];
+        if (m > 1) { winBet(bet*m*0.96-bet, main); setResult(m+'× +$'+fmt(bet*m*0.96-bet),'win'); addHistory('+$'+fmt(bet*m*0.96),'win'); }
+        else if (m===1) { setResult('1× Break Even',''); addHistory('Even',''); }
+        else { loseBet(bet*(1-m), main); setResult(m+'× -$'+fmt(bet*(1-m)),'lose'); addHistory('-$'+fmt(bet*(1-m)),'lose'); }
+      }
+    }, 30);
+  };
+  return { destroy: () => {} };
+};
+
+// ===== MINES =====
+GAME_RUNNERS.mines = function() {
+  const GRID = 5;
+  let minePositions = new Set(), revealed = new Set(), inGame = false, betAmount = 0, safeFound = 0;
+  const main = document.getElementById('gameMain');
+  function setupGame(bet) {
+    minePositions = new Set(); revealed = new Set(); safeFound = 0;
+    const mineCount = 5;
+    while (minePositions.size < mineCount) minePositions.add(Math.floor(rng()*GRID*GRID));
+    betAmount = bet; inGame = true;
+    renderGrid();
+  }
+  function renderGrid() {
+    main.innerHTML = `<div style="padding:20px;display:flex;flex-direction:column;align-items:center;gap:14px;">
+      <div style="font-size:13px;color:var(--text2);">Reveal safe tiles. More = higher multiplier! Avoid mines.</div>
+      <div class="mines-grid" style="grid-template-columns:repeat(${GRID},1fr);width:min(320px,90%);">
+        ${Array.from({length:GRID*GRID},(_,i)=>{
+          const isRev=revealed.has(i), isMine=minePositions.has(i);
+          if(isRev&&isMine) return `<div class="mine-cell mine-hit revealed">💣</div>`;
+          if(isRev) return `<div class="mine-cell safe revealed">💎</div>`;
+          return `<div class="mine-cell" onclick="window._mineClick(${i})" id="mc${i}"></div>`;
+        }).join('')}
+      </div>
+      ${inGame&&safeFound>0?`<button onclick="window._mineCashout()" class="play-btn cashout" style="width:200px;margin-top:4px;">Cash Out ${calcMult().toFixed(2)}× = $${fmt(betAmount*calcMult())}</button>`:''}
+    </div>`;
+  }
+  function calcMult() {
+    const safe = GRID*GRID - 5;
+    let m = 1;
+    for (let i=0;i<safeFound;i++) m *= (safe-i)/(GRID*GRID-i) < 0.5 ? 1.4 : 1.15;
+    return Math.min(m * (1 - 0.04), 50);
+  }
+  function revealAll() {
+    [...Array(GRID*GRID)].forEach((_,i)=>revealed.add(i));
+    renderGrid();
+  }
+  window._mineClick = (i) => {
+    if (!inGame || revealed.has(i)) return;
+    revealed.add(i);
+    if (minePositions.has(i)) {
+      inGame = false; revealAll();
+      loseBet(betAmount, main); setResult('BOOM! -$'+fmt(betAmount),'lose'); addHistory('-$'+fmt(betAmount),'lose');
+      startCooldown(800);
+    } else {
+      safeFound++;
+      renderGrid();
+      setResult('Safe! '+calcMult().toFixed(2)+'×','win');
+    }
+  };
+  window._mineCashout = () => {
+    if (!inGame || safeFound===0) return;
+    inGame = false;
+    const m = calcMult();
+    const payout = betAmount * m - betAmount;
+    winBet(payout, main); setResult('Cash! +$'+fmt(payout),'win'); addHistory('+$'+fmt(payout),'win');
+    revealAll(); startCooldown(600);
+  };
+  makeBetPanel('gameSidebar', { label: 'Start Game', onPlay: 'window._minesStart()' });
+  window._minesStart = () => {
+    const bet = getBet(); if (!bet) return;
+    if (cooldownActive) return;
+    setupGame(bet);
+    document.getElementById('playBtn').textContent = 'New Game';
+  };
+  main.innerHTML = `<div style="text-align:center;color:var(--text3);font-size:15px;">Place a bet to start</div>`;
+  return { destroy: () => { inGame = false; } };
+};
+
+// ===== TEXAS HOLD'EM =====
+GAME_RUNNERS.holdem = function() {
+  const suits = ['♠','♥','♦','♣'], ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+  let deck=[], playerCards=[], dealerCards=[], community=[], pot=0, stage=0, betAmount=0;
+  function shuffle() {
+    deck=[];
+    for(let s of suits)for(let r of ranks)deck.push({s,r});
+    for(let i=deck.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}
+  }
+  function cardHTML(c,fd=false) {
+    if(fd) return `<div class="playing-card facedown" style="width:46px;height:66px;font-size:18px;"><div style="color:#4466ff">?</div></div>`;
+    const red=['♥','♦'].includes(c.s);
+    return `<div class="playing-card ${red?'red':'black'}" style="width:46px;height:66px;"><span class="card-rank" style="font-size:11px;">${c.r}</span><span class="card-suit" style="font-size:20px;">${c.s}</span></div>`;
+  }
+  function renderTable() {
+    const main=document.getElementById('gameMain');
+    main.innerHTML=`<div style="width:100%;padding:16px;display:flex;flex-direction:column;align-items:center;gap:14px;">
+      <div style="text-align:center">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">Dealer</div>
+        <div class="card-container">${dealerCards.map((c,i)=>cardHTML(c,stage<4&&i>0)).join('')}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 20px;background:rgba(5,40,20,0.4);border-radius:12px;border:1px solid rgba(60,140,80,0.2);min-width:260px;">
+        <div style="font-size:11px;color:var(--text3);">Community Cards</div>
+        <div class="holdem-community">${community.length?community.map(c=>cardHTML(c)).join(''):Array(5).fill(0).map((_,i)=>`<div style="width:46px;height:66px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px dashed rgba(255,255,255,0.1);"></div>`).join('')}</div>
+        <div style="font-size:12px;color:var(--text2);">Pot: <b style="color:var(--gold)">$${fmt(pot)}</b></div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">Your Hand</div>
+        <div class="card-container">${playerCards.map(c=>cardHTML(c)).join('')}</div>
+      </div>
+    </div>`;
+  }
+  function rankHand(cards) {
+    // Simple rank: count pairs, trips, etc.
+    const vals=cards.map(c=>ranks.indexOf(c.r));
+    const counts={};
+    vals.forEach(v=>{counts[v]=(counts[v]||0)+1;});
+    const pairs=Object.values(counts).filter(x=>x>=2).length;
+    const trips=Object.values(counts).filter(x=>x>=3).length;
+    const quads=Object.values(counts).filter(x=>x>=4).length;
+    const suits7=cards.map(c=>c.s);
+    const flush=suits7.some(s=>suits7.filter(x=>x===s).length>=5);
+    const sortedV=[...new Set(vals)].sort((a,b)=>a-b);
+    let straight=false;
+    for(let i=0;i<=sortedV.length-5;i++){if(sortedV[i+4]-sortedV[i]===4&&new Set(sortedV.slice(i,i+5)).size===5)straight=true;}
+    if(flush&&straight)return 8;
+    if(quads)return 7;
+    if(trips&&pairs)return 6;
+    if(flush)return 5;
+    if(straight)return 4;
+    if(trips)return 3;
+    if(pairs>=2)return 2;
+    if(pairs===1)return 1;
+    return 0;
+  }
+  function handName(r){return['High Card','Pair','Two Pair','Three of a Kind','Straight','Flush','Full House','Four of a Kind','Straight Flush'][r];}
+  function startGame() {
+    betAmount=getBet(); if(!betAmount)return;
+    pot=betAmount*2; shuffle();
+    playerCards=[deck.pop(),deck.pop()];
+    dealerCards=[deck.pop(),deck.pop()];
+    community=[]; stage=1;
+    renderTable();
+    updateActions();
+  }
+  function updateActions() {
+    const sb=document.getElementById('gameSidebar');
+    const info=sb.querySelector('.poker-info');
+    if(info){
+      const stageNames=['','Pre-Flop','Flop','Turn','River','Showdown'];
+      info.textContent=stageNames[stage]||'';
+    }
+  }
+  function doAction(action) {
+    if(stage===0||stage>4) return;
+    if(action==='fold'){
+      stage=0;
+      loseBet(betAmount, document.getElementById('gameMain'));
+      setResult('Folded -$'+fmt(betAmount),'lose'); addHistory('-$'+fmt(betAmount),'lose');
+      renderTable(); startCooldown(600);
+      return;
+    }
+    if(action==='raise'){
+      const extra=getBet(); if(!extra)return;
+      STATE.balance-=extra; pot+=extra*2; updateBalanceDisplay(STATE.balance); saveState();
+    }
+    // advance stage
+    if(stage===1){community=[deck.pop(),deck.pop(),deck.pop()];}
+    else if(stage===2){community.push(deck.pop());}
+    else if(stage===3){community.push(deck.pop());}
+    else if(stage===4){
+      // Showdown
+      const pAll=[...playerCards,...community];
+      const dAll=[...dealerCards,...community];
+      const pr=rankHand(pAll), dr=rankHand(dAll);
+      stage=5; renderTable();
+      if(pr>dr){
+        const p=pot*0.97;
+        winBet(p-betAmount, document.getElementById('gameMain'));
+        setResult(handName(pr)+' wins! +$'+fmt(p-betAmount),'win'); addHistory('+$'+fmt(p-betAmount),'win');
+      } else if(pr===dr){
+        setResult('Tie — Push',''); addHistory('Push','');
+      } else {
+        loseBet(betAmount, document.getElementById('gameMain'));
+        setResult('Dealer: '+handName(dr)+' -$'+fmt(betAmount),'lose'); addHistory('-$'+fmt(betAmount),'lose');
+      }
+      startCooldown(800);
+      stage=0; return;
+    }
+    stage++;
+    renderTable(); updateActions();
+  }
+  const sidebar=document.getElementById('gameSidebar');
+  sidebar.innerHTML=`
+    <div class="bet-panel">
+      <div class="bet-panel-title">Texas Hold'em</div>
+      <div class="bet-input-wrap"><input class="bet-input" id="betInput" type="number" value="10" min="1"><button class="btn-max" onclick="maxBet()">MAX</button></div>
+      <div class="spacer-sm"></div>
+      <div class="bet-quick"><button class="bet-quick-btn" onclick="setBet(5)">$5</button><button class="bet-quick-btn" onclick="setBet(10)">$10</button><button class="bet-quick-btn" onclick="setBet(25)">$25</button><button class="bet-quick-btn" onclick="setBet(50)">$50</button></div>
+      <button class="play-btn" id="playBtn" onclick="window._holdemStart()">Deal Cards</button>
+      <div class="cooldown-bar"><div class="cooldown-fill" id="cooldownFill" style="width:0"></div></div>
+      <div class="spacer-sm"></div>
+      <div class="poker-info" style="display:none"></div>
+      <div class="poker-actions" style="margin-top:10px;">
+        <button class="poker-btn poker-fold" onclick="window._holdemAction('fold')">Fold</button>
+        <button class="poker-btn poker-call" onclick="window._holdemAction('call')">Call/Check</button>
+        <button class="poker-btn poker-raise" onclick="window._holdemAction('raise')">Raise</button>
+      </div>
+    </div>
+    <div class="result-panel" id="resultPanel"><div class="result-label">Result</div><div class="result-val" id="resultVal">—</div></div>
+    <div class="history-panel"><div class="history-title">Recent</div><div class="history-list" id="historyList"></div></div>
+  `;
+  sidebar.querySelector('.poker-info').style.display='block';
+  window._holdemStart=startGame; window._holdemAction=doAction;
+  document.getElementById('gameMain').innerHTML=`<div style="text-align:center;color:var(--text3);font-size:15px;padding:20px;">Place a bet and click Deal</div>`;
+  return { destroy:()=>{} };
+};
+
+// ===== STOCKS =====
+GAME_RUNNERS.stocks = function() {
+  const main = document.getElementById('gameMain');
+  main.innerHTML = `<canvas id="stockCanvas" width="480" height="280" style="display:block;margin:auto;border-radius:12px;background:rgba(5,10,30,0.5);border:1px solid var(--border);"></canvas>`;
+  const canvas = document.getElementById('stockCanvas');
+  const ctx = canvas.getContext('2d');
+  let priceHistory = [], currentPrice = 100;
+  // Generate some initial price data with noise
+  for(let i=0;i<40;i++){
+    const change = (rng()-0.51)*3;
+    currentPrice = Math.max(10, currentPrice+change);
+    priceHistory.push(currentPrice);
+  }
+  function drawChart(prediction=null) {
+    ctx.clearRect(0,0,480,280);
+    const min=Math.min(...priceHistory)-5, max=Math.max(...priceHistory)+5;
+    const range=max-min||1;
+    function toY(v){return 250-(v-min)/range*220;}
+    // Grid lines
+    ctx.strokeStyle='rgba(255,255,255,0.05)'; ctx.lineWidth=1;
+    for(let i=0;i<=4;i++){const y=30+i*55;ctx.beginPath();ctx.moveTo(40,y);ctx.lineTo(460,y);ctx.stroke();}
+    // Price line
+    ctx.beginPath();
+    ctx.moveTo(40,toY(priceHistory[0]));
+    const step=(460-40)/Math.max(priceHistory.length-1,1);
+    priceHistory.forEach((p,i)=>{ctx.lineTo(40+i*step,toY(p));});
+    ctx.strokeStyle='rgba(0,207,255,0.8)'; ctx.lineWidth=2; ctx.stroke();
+    // fill
+    ctx.lineTo(40+(priceHistory.length-1)*step,250);ctx.lineTo(40,250);ctx.closePath();
+    ctx.fillStyle='rgba(0,207,255,0.06)'; ctx.fill();
+    // Current price
+    const lastY=toY(priceHistory[priceHistory.length-1]);
+    ctx.fillStyle='rgba(0,207,255,0.9)'; ctx.beginPath(); ctx.arc(40+(priceHistory.length-1)*step,lastY,5,0,Math.PI*2); ctx.fill();
+    // Prediction arrow
+    if(prediction==='up'){ctx.fillStyle='rgba(0,230,118,0.8)';ctx.font='bold 22px sans-serif';ctx.fillText('▲',450,lastY+5);}
+    if(prediction==='down'){ctx.fillStyle='rgba(255,61,90,0.8)';ctx.font='bold 22px sans-serif';ctx.fillText('▼',450,lastY+5);}
+    // Price label
+    ctx.fillStyle='var(--text)'; ctx.font='bold 14px sans-serif'; ctx.textAlign='right';
+    ctx.fillText('$'+currentPrice.toFixed(2),440,lastY-8);
+    ctx.textAlign='left';
+  }
+  drawChart();
+  const sidebar=document.getElementById('gameSidebar');
+  makeBetPanel('gameSidebar',{label:'Up',onPlay:"window._stockUp()"});
+  const betPanel=sidebar.querySelector('.bet-panel');
+  const downBtn=document.createElement('button');
+  downBtn.className='play-btn'; downBtn.style.cssText='margin-top:8px;background:linear-gradient(135deg,var(--red),#aa0022)';
+  downBtn.textContent='Down'; downBtn.onclick=()=>window._stockDown();
+  betPanel.insertBefore(downBtn,betPanel.querySelector('.cooldown-bar'));
+  function resolve(prediction){
+    const bet=getBet(); if(!bet||cooldownActive)return;
+    startCooldown(1800);
+    drawChart(prediction);
+    setTimeout(()=>{
+      // Next price: biased slightly against player
+      const trend=(rng()-0.52)*6+(rng()-0.5)*4;
+      const newPrice=Math.max(5,currentPrice+trend);
+      priceHistory.push(newPrice);
+      if(priceHistory.length>50)priceHistory.shift();
+      const went=newPrice>currentPrice?'up':'down';
+      currentPrice=newPrice;
+      drawChart();
+      if(went===prediction){
+        const p=bet*1.88; winBet(p-bet,main); setResult('Correct! +$'+fmt(p-bet),'win'); addHistory('+$'+fmt(p-bet),'win');
+      } else {
+        loseBet(bet,main); setResult('Wrong -$'+fmt(bet),'lose'); addHistory('-$'+fmt(bet),'lose');
+      }
+    },1600);
+  }
+  window._stockUp=()=>resolve('up'); window._stockDown=()=>resolve('down');
+  return {destroy:()=>{}};
+};
+
+// ===== SHELL GAME =====
+GAME_RUNNERS.cups = function() {
+  const main=document.getElementById('gameMain');
+  let cupCount=3, ballCup=0, stage='choose', shuffleStep=0, shuffleTotal=0, animating=false;
+  let positions=[0,1,2], betAmount=0;
+  function cupSVG(idx,hasBall=false) {
+    return `<svg class="cup-svg" viewBox="0 0 80 100" width="80" height="100" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10 80 Q8 50 15 35 L25 20 L55 20 L65 35 Q72 50 70 80Z" fill="#884422" stroke="#6a3310" stroke-width="2"/>
+      <ellipse cx="40" cy="80" rx="32" ry="6" fill="#663311"/>
+      ${hasBall?'<circle cx="40" cy="90" r="8" fill="#ffcc00" stroke="#cc9900" stroke-width="1.5"/>':''}
+    </svg>`;
+  }
+  function render(showBall=false) {
+    main.innerHTML=`<div style="width:100%;padding:24px 16px;display:flex;flex-direction:column;align-items:center;gap:20px;">
+      <div style="font-size:14px;color:var(--text2);text-align:center;">
+        ${stage==='choose'?'Click a cup to guess!':stage==='reveal'?'...':stage==='shuffling'?'Watch carefully...':'Pick the right cup!'}
+      </div>
+      <div style="display:flex;gap:${cupCount>3?16:32}px;justify-content:center;align-items:flex-end;padding-bottom:20px;">
+        ${Array.from({length:cupCount},(_,i)=>`
+          <div class="cup-item" id="cup${i}" onclick="${stage==='choose'&&!animating?`window._cupsGuess(${i})`:'null'}" style="transform:translateX(${(positions[i]-i)*0}px)">
+            ${cupSVG(i,showBall&&positions[i]===ballCup)}
+            <div style="font-size:12px;color:var(--text3);margin-top:4px;">${i+1}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }
+  function doShuffle(onDone) {
+    let swaps = 8 + Math.floor(rng()*8);
+    let done = 0;
+    function swapCups() {
+      if(done>=swaps){onDone();return;}
+      const a=Math.floor(rng()*cupCount), b=(a+1+Math.floor(rng()*(cupCount-1)))%cupCount;
+      [positions[a],positions[b]]=[positions[b],positions[a]];
+      if(positions[a]===ballCup){const tmp=a;} // track ball visually
+      render(false);
+      done++;
+      setTimeout(swapCups, 120+Math.floor(rng()*80));
+    }
+    swapCups();
+  }
+  window._cupsGuess = (i) => {
+    if(stage!=='choose'||animating)return;
+    animating=true;
+    const won=(i===ballCup);
+    // Reveal
+    stage='reveal';
+    render(true);
+    setTimeout(()=>{
+      if(won){
+        const mult=cupCount===3?2:cupCount===4?3:4;
+        const p=betAmount*mult*(1-0.04);
+        winBet(p-betAmount,main); setResult('Correct! +$'+fmt(p-betAmount),'win'); addHistory('+$'+fmt(p-betAmount),'win');
+      } else {
+        loseBet(betAmount,main); setResult('Wrong! -$'+fmt(betAmount),'lose'); addHistory('-$'+fmt(betAmount),'lose');
+      }
+      stage='done'; animating=false;
+      startCooldown(600);
+      document.getElementById('playBtn').textContent='Play Again';
+    },1200);
+  };
+  makeBetPanel('gameSidebar',{label:'Start Shuffle',onPlay:'window._cupsStart()'});
+  const bp=document.getElementById('gameSidebar').querySelector('.bet-panel');
+  const selDiv=document.createElement('div');
+  selDiv.innerHTML=`<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Cups (harder = more payout)</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <button class="bet-quick-btn" onclick="window._cupsSetCount(3,this)">3 Cups (2×)</button>
+      <button class="bet-quick-btn" onclick="window._cupsSetCount(4,this)">4 Cups (3×)</button>
+      <button class="bet-quick-btn" onclick="window._cupsSetCount(5,this)">5 Cups (4×)</button>
+    </div>`;
+  bp.insertBefore(selDiv,bp.querySelector('.play-btn'));
+  window._cupsSetCount=(n,el)=>{cupCount=n;document.querySelectorAll('.bet-quick-btn').forEach(b=>b.style.borderColor='');el.style.borderColor='var(--accent2)';};
+  window._cupsStart=()=>{
+    betAmount=getBet(); if(!betAmount)return;
+    ballCup=Math.floor(rng()*cupCount);
+    positions=Array.from({length:cupCount},(_,i)=>i);
+    stage='reveal'; render(true);
+    setTimeout(()=>{stage='shuffling';render(false);doShuffle(()=>{stage='choose';animating=false;render(false);});},1200);
+    document.getElementById('playBtn').textContent='Play Again';
+    startCooldown(2800);
+  };
+  main.innerHTML=`<div style="text-align:center;color:var(--text3);font-size:15px;">Place a bet to start</div>`;
+  return {destroy:()=>{animating=false;}};
+};
+
+// ===== CHICKEN =====
+GAME_RUNNERS.chicken = function() {
+  const main=document.getElementById('gameMain');
+  let phase='idle', targetStart=0, targetEnd=0, clickTime=0, timer=null, betAmount=0;
+  let windowMs=400, delayRange=[1000,3500];
+  function render(state,extra='') {
+    const colors={'idle':'rgba(5,20,50,0.5)','waiting':'rgba(5,20,50,0.5)','window':'rgba(0,100,50,0.3)','late':'rgba(100,0,0,0.3)','result':'rgba(5,20,50,0.5)'};
+    main.innerHTML=`<div class="reaction-area" id="reactionArea" style="background:${colors[state]||colors.idle};border:2px solid ${state==='window'?'var(--green)':'var(--border)'};" onclick="window._chickenClick()">
+      <div style="text-align:center;">
+        ${state==='idle'?`<div style="font-size:48px;">🐔</div><div style="color:var(--text2);font-size:15px;margin-top:12px;">Click when the chicken runs!</div>`:''}
+        ${state==='waiting'?`<div style="font-size:48px;animation:pulseGlow 0.8s infinite">🐔</div><div style="color:var(--text3);font-size:14px;margin-top:10px;">Wait for it...</div>`:''}
+        ${state==='window'?`<div style="font-size:64px;animation:mockZoom 0.1s">🐔💨</div><div style="color:var(--green);font-size:18px;font-weight:800;margin-top:8px;">NOW! CLICK!</div>`:''}
+        ${state==='late'?`<div style="font-size:48px;">🐔</div><div style="color:var(--red);font-size:16px;margin-top:10px;">Too slow!</div>`:''}
+        ${extra}
+      </div>
+    </div>`;
+  }
+  render('idle');
+  window._chickenClick=()=>{
+    if(phase==='waiting'){
+      // Too early
+      clearTimeout(timer);
+      phase='result';
+      const bet=betAmount||1;
+      loseBet(bet,main); setResult('Too early! -$'+fmt(bet),'lose'); addHistory('-$'+fmt(bet),'lose');
+      render('late',`<div style="color:var(--red);font-size:13px;margin-top:10px;">Too early!</div>`);
+      phase='idle'; startCooldown(600);
+    } else if(phase==='window'){
+      clearTimeout(timer);
+      const elapsed=Date.now()-targetStart;
+      const pct=1-(elapsed/windowMs);
+      const mult=1+(pct*1.5);
+      const payout=betAmount*mult*(1-0.03);
+      winBet(payout-betAmount,main); setResult('Reflex! +$'+fmt(payout-betAmount),'win'); addHistory('+$'+fmt(payout-betAmount),'win');
+      render('result',`<div style="color:var(--green);font-size:14px;margin-top:10px;">Reaction: ${elapsed}ms</div>`);
+      phase='idle'; startCooldown(600);
+    }
+  };
+  makeBetPanel('gameSidebar',{label:'Start',onPlay:'window._chickenStart()'});
+  window._chickenStart=()=>{
+    betAmount=getBet(); if(!betAmount)return;
+    if(cooldownActive)return;
+    phase='waiting'; render('waiting');
+    const delay=delayRange[0]+rng()*(delayRange[1]-delayRange[0]);
+    timer=setTimeout(()=>{
+      phase='window'; targetStart=Date.now();
+      render('window');
+      timer=setTimeout(()=>{
+        if(phase==='window'){
+          phase='idle'; render('late');
+          loseBet(betAmount,main); setResult('Missed! -$'+fmt(betAmount),'lose'); addHistory('-$'+fmt(betAmount),'lose');
+          startCooldown(600);
+        }
+      },windowMs);
+    },delay);
+    startCooldown(delay+windowMs+200);
+  };
+  return {destroy:()=>{if(timer)clearTimeout(timer);}};
+};
+
+// ===== SLOTS =====
+GAME_RUNNERS.slots = function() {
+  const main=document.getElementById('gameMain');
+  const SYMS=['🍒','💎','7️⃣','🔔','⭐','🍋','🍊','💰'];
+  const PAYS={'🍒🍒🍒':3,'💎💎💎':25,'7️⃣7️⃣7️⃣':15,'🔔🔔🔔':8,'⭐⭐⭐':5,'🍋🍋🍋':3,'🍊🍊🍊':3,'💰💰💰':50};
+  let spinning=false;
+  function getResult(){
+    // house edge: bias against triple 7 and diamond
+    const r=[];
+    for(let i=0;i<3;i++){
+      const houseRoll=rng();
+      if(houseRoll<0.08)r.push('🍒'); // common
+      else r.push(SYMS[Math.floor(rng()*SYMS.length)]);
+    }
+    return r;
+  }
+  function renderSlots(syms,spinning=false){
+    main.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:20px;padding:30px;">
+      <div style="display:flex;gap:10px;align-items:center;">
+        ${syms.map((s,i)=>`<div class="slot-reel${spinning?' spinning':''}"><div class="slot-sym">${s}</div></div>`).join('')}
+      </div>
+      <div style="font-size:12px;color:var(--text3);">Line up 3 matching symbols to win!</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:320px;">
+        ${Object.entries(PAYS).map(([k,v])=>`<div style="padding:3px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;font-size:11px;color:var(--text2);">${k.split('').map(c=>c).join('')} = ${v}×</div>`).join('')}
+      </div>
+    </div>`;
+  }
+  renderSlots(['🎰','🎰','🎰']);
+  makeBetPanel('gameSidebar',{label:'SPIN',onPlay:'window._slotSpin()'});
+  window._slotSpin=()=>{
+    const bet=getBet(); if(!bet||spinning)return;
+    spinning=true; startCooldown(1800);
+    // Animate
+    let ticks=0; const total=18;
+    const rollInt=setInterval(()=>{
+      const tmpSyms=[SYMS[Math.floor(rng()*SYMS.length)],SYMS[Math.floor(rng()*SYMS.length)],SYMS[Math.floor(rng()*SYMS.length)]];
+      renderSlots(tmpSyms,true); ticks++;
+      if(ticks>=total){
+        clearInterval(rollInt);
+        const final=getResult();
+        renderSlots(final);
+        spinning=false;
+        const key=final.join('');
+        if(PAYS[key]){
+          const p=bet*PAYS[key]*0.97;
+          winBet(p-bet,main); setResult(PAYS[key]+'× Win! +$'+fmt(p-bet),'win'); addHistory('+$'+fmt(p-bet),'win');
+        } else {
+          loseBet(bet,main); setResult('No match -$'+fmt(bet),'lose'); addHistory('-$'+fmt(bet),'lose');
+        }
+      }
+    },80);
+  };
+  return {destroy:()=>{spinning=false;}};
+};
+
+// ===== COIN FLIP =====
+GAME_RUNNERS.coinflip = function() {
+  const main=document.getElementById('gameMain');
+  let chosen='heads', flipping=false;
+  function renderCoin(side='heads',fl=false){
+    main.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:24px;padding:30px;">
+      <div style="display:flex;gap:20px;">
+        <div style="text-align:center;cursor:pointer" onclick="window._cfChoose('heads',this)">
+          <div class="coin heads${chosen==='heads'?' ':''}${fl?' flipping':''}" style="border:3px solid ${chosen==='heads'?'var(--gold)':'transparent'}">H</div>
+          <div style="font-size:12px;margin-top:6px;color:${chosen==='heads'?'var(--gold)':'var(--text3)'}">Heads</div>
+        </div>
+        <div style="text-align:center;cursor:pointer" onclick="window._cfChoose('tails',this)">
+          <div class="coin tails${fl?' flipping':''}" style="border:3px solid ${chosen==='tails'?'var(--accent2)':'transparent'}">T</div>
+          <div style="font-size:12px;margin-top:6px;color:${chosen==='tails'?'var(--accent2)':'var(--text3)'}">Tails</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text3);text-align:center;">Choose heads or tails — 1.95× payout</div>
+    </div>`;
+  }
+  renderCoin();
+  window._cfChoose=(s)=>{chosen=s;renderCoin();};
+  makeBetPanel('gameSidebar',{label:'Flip!',onPlay:'window._cfFlip()'});
+  window._cfFlip=()=>{
+    const bet=getBet(); if(!bet||flipping)return;
+    flipping=true; startCooldown(1200);
+    renderCoin(chosen,true);
+    setTimeout(()=>{
+      const result=rng()<0.505?'tails':'heads';// slight house edge
+      renderCoin(result,false);
+      flipping=false;
+      if(result===chosen){
+        winBet(bet*0.95,main); setResult(result.toUpperCase()+' +$'+fmt(bet*0.95),'win'); addHistory('+$'+fmt(bet*0.95),'win');
+      } else {
+        loseBet(bet,main); setResult(result.toUpperCase()+' -$'+fmt(bet),'lose'); addHistory('-$'+fmt(bet),'lose');
+      }
+    },900);
+  };
+  return {destroy:()=>{flipping=false;}};
+};
+
+// ===== DICE =====
+GAME_RUNNERS.dice = function() {
+  const main=document.getElementById('gameMain');
+  const DICE_FACES=['⚀','⚁','⚂','⚃','⚄','⚅'];
+  let bet_type='high',rolling=false;
+  function render(d1=null,d2=null){
+    main.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:24px;padding:30px;">
+      <div style="display:flex;gap:20px;">
+        <div class="dice-face${rolling?' dice-rolling':''}">${d1!=null?DICE_FACES[d1-1]:'⚀'}</div>
+        <div class="dice-face${rolling?' dice-rolling':''}">${d2!=null?DICE_FACES[d2-1]:'⚀'}</div>
+      </div>
+      <div style="font-size:${d1?'22px':'14px'};font-weight:${d1?800:400};color:${d1?'var(--neon)':'var(--text3)'};">${d1?'Total: '+(d1+d2):'Place your bet and roll!'}</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+        ${[{id:'high',label:'High (7-12)',pay:1.9},{id:'low',label:'Low (2-6)',pay:1.9},{id:'seven',label:'Lucky 7',pay:5.5},{id:'doubles',label:'Doubles',pay:5}].map(b=>`
+          <button class="rou-bet-btn rou-even${bet_type===b.id?' selected':''}" onclick="window._diceSetType('${b.id}',this)" style="min-width:90px;">${b.label}<br><span style="font-size:10px">${b.pay}×</span></button>`).join('')}
+      </div>
+    </div>`;
+  }
+  render();
+  window._diceSetType=(t,el)=>{bet_type=t;document.querySelectorAll('.rou-bet-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');};
+  makeBetPanel('gameSidebar',{label:'Roll Dice',onPlay:'window._diceRoll()'});
+  window._diceRoll=()=>{
+    const bet=getBet(); if(!bet||rolling)return;
+    rolling=true; startCooldown(1200);
+    render();
+    setTimeout(()=>{
+      const d1=Math.ceil(rng()*6),d2=Math.ceil(rng()*6);
+      const total=d1+d2;
+      rolling=false; render(d1,d2);
+      let won=false, payout=bet;
+      if(bet_type==='high'&&total>=7){won=true;payout=bet*1.85;}
+      else if(bet_type==='low'&&total<=6){won=true;payout=bet*1.85;}
+      else if(bet_type==='seven'&&total===7){won=true;payout=bet*5.2;}
+      else if(bet_type==='doubles'&&d1===d2){won=true;payout=bet*4.8;}
+      if(won){winBet(payout-bet,main);setResult('Win! +$'+fmt(payout-bet),'win');addHistory('+$'+fmt(payout-bet),'win');}
+      else{loseBet(bet,main);setResult('Loss -$'+fmt(bet),'lose');addHistory('-$'+fmt(bet),'lose');}
+    },900);
+  };
+  return {destroy:()=>{rolling=false;}};
+};
+
+// ===== FORTUNE WHEEL =====
+GAME_RUNNERS.wheel = function() {
+  const main=document.getElementById('gameMain');
+  main.innerHTML=`<canvas id="wheelCanvas" width="360" height="360" style="display:block;margin:auto;cursor:pointer;" onclick="window._wheelSpin()"></canvas>`;
+  const canvas=document.getElementById('wheelCanvas');
+  const ctx=canvas.getContext('2d');
+  const SEGS=[{label:'0.2×',color:'#e00',val:0.2},{label:'1.5×',color:'#0a8040',val:1.5},{label:'0.5×',color:'#aa5500',val:0.5},{label:'2×',color:'#2244aa',val:2},{label:'0×',color:'#440088',val:0},{label:'3×',color:'#00888a',val:3},{label:'0.2×',color:'#e00',val:0.2},{label:'5×',color:'#886600',val:5},{label:'0.5×',color:'#aa5500',val:0.5},{label:'1.5×',color:'#0a8040',val:1.5},{label:'0×',color:'#440088',val:0},{label:'10×',color:'#004488',val:10}];
+  const N=SEGS.length, seg=Math.PI*2/N;
+  let angle=0, spinning=false;
+  function draw(a=0){
+    ctx.clearRect(0,0,360,360);
+    const cx=180,cy=180,r=160;
+    for(let i=0;i<N;i++){
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,a+i*seg,a+(i+1)*seg);ctx.closePath();
+      ctx.fillStyle=SEGS[i].color;ctx.fill();
+      ctx.strokeStyle='rgba(0,0,0,0.4)';ctx.lineWidth=1.5;ctx.stroke();
+      ctx.save();ctx.translate(cx,cy);ctx.rotate(a+i*seg+seg/2);
+      ctx.translate(r*0.7,0);ctx.rotate(Math.PI/2);
+      ctx.fillStyle='#fff';ctx.font='bold 12px sans-serif';ctx.textAlign='center';
+      ctx.fillText(SEGS[i].label,0,4);ctx.restore();
+    }
+    ctx.beginPath();ctx.arc(cx,cy,18,0,Math.PI*2);ctx.fillStyle='#0a0f20';ctx.fill();ctx.strokeStyle='#336';ctx.lineWidth=3;ctx.stroke();
+    // pointer
+    ctx.beginPath();ctx.moveTo(cx,14);ctx.lineTo(cx-8,36);ctx.lineTo(cx+8,36);ctx.closePath();
+    ctx.fillStyle='#fff';ctx.fill();
+  }
+  draw(0);
+  makeBetPanel('gameSidebar',{label:'Spin Wheel',onPlay:'window._wheelSpin()'});
+  window._wheelSpin=()=>{
+    const bet=getBet();if(!bet||spinning)return;
+    spinning=true;startCooldown(4000);
+    // Select outcome with house bias
+    const houseWeights=[4,3,4,2,4,1,4,0.5,4,3,4,0.2];
+    const total=houseWeights.reduce((a,b)=>a+b,0);
+    let pick=rng()*total,segIdx=0;
+    for(let i=0;i<houseWeights.length;i++){pick-=houseWeights[i];if(pick<=0){segIdx=i;break;}}
+    const targetAngle=-segIdx*seg-seg/2;
+    const spins=5+rng()*3;
+    const final=targetAngle+spins*Math.PI*2;
+    const dur=3800,t0=performance.now();
+    const startA=angle;
+    function tick(t){
+      const p=Math.min((t-t0)/dur,1);
+      const ease=p<1?1-Math.pow(1-p,4):1;
+      angle=startA+(final-startA)*ease;
+      draw(angle);
+      if(p<1){requestAnimationFrame(tick);return;}
+      spinning=false;
+      const m=SEGS[segIdx].val;
+      if(m>1){const p=bet*m*0.97;winBet(p-bet,main);setResult(m+'× +$'+fmt(p-bet),'win');addHistory('+$'+fmt(p-bet),'win');}
+      else if(m===0){loseBet(bet,main);setResult('0× BANKRUPT -$'+fmt(bet),'lose');addHistory('-$'+fmt(bet),'lose');}
+      else{const loss=bet*(1-m);loseBet(loss,main);setResult(m+'× -$'+fmt(loss),'lose');addHistory('-$'+fmt(loss),'lose');}
+    }
+    requestAnimationFrame(tick);
+  };
+  return {destroy:()=>{spinning=false;}};
+};
+
+// ===== KENO =====
+GAME_RUNNERS.keno = function() {
+  const main=document.getElementById('gameMain');
+  let selected=new Set(),drawn=new Set(),inGame=false;
+  const MAX_PICK=10;
+  function render(state='pick'){
+    main.innerHTML=`<div style="padding:16px;width:100%;">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px;text-align:center;">Pick up to ${MAX_PICK} numbers (${selected.size} selected)</div>
+      <div class="keno-grid">
+        ${Array.from({length:40},(_,i)=>{
+          const n=i+1;
+          const sel=selected.has(n),hit=drawn.has(n)&&sel,miss=drawn.has(n)&&!sel;
+          return `<div class="keno-num${sel?' selected':''}${hit?' hit':''}${miss?' miss':''}" onclick="${state==='pick'?`window._kenoToggle(${n})`:'null'}">${n}</div>`;
+        }).join('')}
+      </div>
+      ${drawn.size?`<div style="font-size:13px;color:var(--text2);text-align:center;margin-top:10px;">Matches: <b style="color:var(--gold)">${[...selected].filter(n=>drawn.has(n)).length}/${selected.size}</b></div>`:''}
+    </div>`;
+  }
+  render();
+  window._kenoToggle=(n)=>{
+    if(inGame)return;
+    if(selected.has(n))selected.delete(n);
+    else if(selected.size<MAX_PICK)selected.add(n);
+    render();
+  };
+  makeBetPanel('gameSidebar',{label:'Draw Numbers',onPlay:'window._kenoDraw()'});
+  window._kenoDraw=()=>{
+    const bet=getBet();if(!bet||selected.size<1||inGame)return;
+    inGame=true; drawn.clear(); startCooldown(2000);
+    const nums=Array.from({length:40},(_,i)=>i+1);
+    for(let i=nums.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[nums[i],nums[j]]=[nums[j],nums[i]];}
+    const drawNums=nums.slice(0,20);
+    let i=0;
+    const int=setInterval(()=>{
+      drawn.add(drawNums[i]); i++;
+      render('drawn');
+      if(i>=20){
+        clearInterval(int);
+        const matches=[...selected].filter(n=>drawn.has(n)).length;
+        const total=selected.size;
+        const payTable=[0,0,0.5,1,2,4,8,16,30,60,120];
+        const matchPct=matches/total;
+        const payIdx=Math.min(Math.floor(matchPct*payTable.length),payTable.length-1);
+        const mult=payTable[Math.min(matches,10)];
+        if(mult>1){winBet(bet*mult*(1-0.05)-bet,main);setResult(`${matches}/${total} — ${mult}× +$${fmt(bet*mult*0.95-bet)}`,'win');addHistory('+$'+fmt(bet*mult*0.95-bet),'win');}
+        else if(mult===1){setResult(`${matches} match — Break even`,'');addHistory('Even','');}
+        else{loseBet(bet,main);setResult(`${matches}/${total} matches — loss`,'lose');addHistory('-$'+fmt(bet),'lose');}
+        inGame=false;
+        document.getElementById('playBtn').textContent='Play Again';
+      }
+    },80);
+  };
+  main.innerHTML=`<div style="text-align:center;color:var(--text3);font-size:15px;padding:20px;">Select numbers then place bet</div>`;
+  render();
+  return {destroy:()=>{inGame=false;}};
+};
+
+// ===== HIGHER OR LOWER =====
+GAME_RUNNERS.higher = function() {
+  const main=document.getElementById('gameMain');
+  const SUITS=['♠','♥','♦','♣'],RANKS=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+  let currentCard=null,streak=0,betAmount=0,inRound=false;
+  function randCard(){return{r:RANKS[Math.floor(rng()*13)],s:SUITS[Math.floor(rng()*4)]};}
+  function cardVal(c){return RANKS.indexOf(c.r);}
+  function render(next=null,result=null){
+    const red=currentCard&&['♥','♦'].includes(currentCard.s);
+    const nred=next&&['♥','♦'].includes(next.s);
+    main.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:20px;padding:24px;">
+      <div style="font-size:13px;color:var(--text2);">Streak: <b style="color:var(--gold)">${streak}</b></div>
+      <div style="display:flex;gap:20px;align-items:center;">
+        ${currentCard?`<div class="card-reveal"><span style="font-size:20px;font-weight:900;color:${red?'#e00':'#111'}">${currentCard.r}</span><span style="font-size:26px">${currentCard.s}</span></div>`:'<div style="width:100px;height:140px;border-radius:12px;border:2px dashed rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;color:var(--text3)">?</div>'}
+        <div style="font-size:28px;color:var(--text3);">→</div>
+        ${next?`<div class="card-reveal"><span style="font-size:20px;font-weight:900;color:${nred?'#e00':'#111'}">${next.r}</span><span style="font-size:26px">${next.s}</span></div>`:'<div style="width:100px;height:140px;border-radius:12px;background:linear-gradient(135deg,#1a3a8f,#0d1f4f);display:flex;align-items:center;justify-content:center;font-size:32px;color:#4466ff">?</div>'}
+      </div>
+      <div class="higher-lower-btns" style="width:220px;">
+        <button class="hl-btn hl-higher" onclick="window._hlGuess('higher')">▲ Higher</button>
+        <button class="hl-btn hl-lower" onclick="window._hlGuess('lower')">▼ Lower</button>
+      </div>
+      ${result?`<div style="font-size:16px;font-weight:700;color:${result.win?'var(--green)':'var(--red)'}">${result.msg}</div>`:''}
+      ${streak>0&&!result?`<button onclick="window._hlCashout()" class="play-btn cashout" style="width:180px;padding:10px;">Cash Out ${(1+streak*0.5).toFixed(1)}× = $${fmt(betAmount*(1+streak*0.5)*0.95)}</button>`:''}
+    </div>`;
+  }
+  window._hlGuess=(dir)=>{
+    if(!inRound)return;
+    const next=randCard();
+    const cv=cardVal(currentCard),nv=cardVal(next);
+    let won=false;
+    if(dir==='higher'&&nv>cv)won=true;
+    else if(dir==='lower'&&nv<cv)won=true;
+    else if(nv===cv)won=rng()>0.5;// tie = coin flip
+    render(next,{win:won,msg:won?'Correct!':'Wrong!'});
+    if(won){
+      streak++;
+      setTimeout(()=>{currentCard=next;render();},1000);
+    } else {
+      loseBet(betAmount,main);setResult('Guessed wrong -$'+fmt(betAmount),'lose');addHistory('-$'+fmt(betAmount),'lose');
+      streak=0;inRound=false;startCooldown(600);
+    }
+  };
+  window._hlCashout=()=>{
+    if(!inRound||streak===0)return;
+    inRound=false;
+    const m=(1+streak*0.5)*0.95;
+    const p=betAmount*m;
+    winBet(p-betAmount,main);setResult('Cashed out! +$'+fmt(p-betAmount),'win');addHistory('+$'+fmt(p-betAmount),'win');
+    streak=0;startCooldown(500);
+  };
+  makeBetPanel('gameSidebar',{label:'New Game',onPlay:'window._hlStart()'});
+  window._hlStart=()=>{
+    betAmount=getBet();if(!betAmount)return;
+    streak=0;inRound=true;
+    currentCard=randCard();render();
+  };
+  main.innerHTML=`<div style="text-align:center;color:var(--text3);font-size:15px;padding:20px;">Place a bet to start</div>`;
+  return {destroy:()=>{inRound=false;}};
+};
+
+// ===== RISK LADDER =====
+GAME_RUNNERS.ladder = function() {
+  const STEPS=[{label:'Step 1',mult:1.2,safe:0.8},{label:'Step 2',mult:1.6,safe:0.7},{label:'Step 3',mult:2.5,safe:0.6},{label:'Step 4',mult:4,safe:0.5},{label:'Step 5',mult:7,safe:0.4},{label:'JACKPOT',mult:25,safe:0.3}];
+  let currentStep=0,inGame=false,betAmount=0;
+  const main=document.getElementById('gameMain');
+  function render(){
+    main.innerHTML=`<div style="padding:20px;width:100%;">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:14px;text-align:center;">${inGame?'Climb or cash out':'Start game to climb the ladder'}</div>
+      <div class="ladder-steps">
+        ${STEPS.map((s,i)=>`<div class="ladder-step ${i<currentStep?'passed':i===currentStep&&inGame?'current':'future'}">
+          <span>${s.label}</span>
+          <span>${s.mult}×</span>
+          <span style="font-size:10px;color:inherit;opacity:0.7">${Math.round(s.safe*100)}%</span>
+        </div>`).join('')}
+      </div>
+      ${inGame?`<div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="play-btn" id="climbBtn" style="flex:1" onclick="window._ladderClimb()">Climb (${STEPS[currentStep].safe*100}% safe)</button>
+        <button class="play-btn cashout" style="flex:1" onclick="window._ladderCashout()">Cash Out $${fmt(betAmount*(currentStep>0?STEPS[currentStep-1].mult:1)*0.96)}</button>
+      </div>`:''}
+    </div>`;
+  }
+  render();
+  window._ladderClimb=()=>{
+    if(!inGame)return;
+    const step=STEPS[currentStep];
+    const won=rng()<step.safe*(1-getStreakPenalty('ladder'));
+    if(won){
+      currentStep++;
+      trackStreak('ladder',true);
+      if(currentStep>=STEPS.length){
+        const p=betAmount*STEPS[STEPS.length-1].mult*0.96;
+        winBet(p-betAmount,main);setResult('JACKPOT! +$'+fmt(p-betAmount),'win');addHistory('+$'+fmt(p-betAmount),'win');
+        inGame=false;currentStep=0;startCooldown(800);
+        document.getElementById('playBtn').textContent='New Game';
+      } else render();
+    } else {
+      trackStreak('ladder',false);
+      loseBet(betAmount,main);setResult('Fell! -$'+fmt(betAmount),'lose');addHistory('-$'+fmt(betAmount),'lose');
+      inGame=false;currentStep=0;render();startCooldown(600);
+      document.getElementById('playBtn').textContent='New Game';
+    }
+  };
+  window._ladderCashout=()=>{
+    if(!inGame||currentStep===0)return;
+    inGame=false;
+    const p=betAmount*STEPS[currentStep-1].mult*0.96;
+    winBet(p-betAmount,main);setResult('Cashed! +$'+fmt(p-betAmount),'win');addHistory('+$'+fmt(p-betAmount),'win');
+    currentStep=0;render();startCooldown(500);
+    document.getElementById('playBtn').textContent='New Game';
+  };
+  makeBetPanel('gameSidebar',{label:'Start Climb',onPlay:'window._ladderStart()'});
+  window._ladderStart=()=>{
+    betAmount=getBet();if(!betAmount)return;
+    inGame=true;currentStep=0;render();
+    document.getElementById('playBtn').textContent='New Game';
+  };
+  main.innerHTML=`<div style="text-align:center;color:var(--text3);font-size:15px;padding:20px;">Climb for higher rewards!</div>`;
+  render();
+  return {destroy:()=>{inGame=false;}};
+};
+
+// ===== TOWER CLIMB =====
+GAME_RUNNERS.tower = function() {
+  const ROWS=8, COLS=3;
+  let grid=[], cleared=[], currentRow=ROWS-1, inGame=false, betAmount=0;
+  const main=document.getElementById('gameMain');
+  function buildGrid(){
+    grid=[];
+    for(let r=0;r<ROWS;r++){
+      const bombIdx=Math.floor(rng()*COLS);
+      grid.push(Array.from({length:COLS},(_,c)=>c===bombIdx?'bomb':'safe'));
+    }
+  }
+  function render(){
+    main.innerHTML=`<div style="padding:14px;width:100%;overflow-y:auto;max-height:460px;">
+      ${Array.from({length:ROWS},(_,r)=>{
+        const row=grid[r],rCleared=cleared.includes(r);
+        const isActive=inGame&&r===currentRow;
+        return `<div style="margin:4px 0;" class="tower-row">
+          ${row.map((cell,c)=>{
+            if(rCleared)return`<div class="tower-cell cleared" style="width:70px;height:40px;">${cell==='bomb'?'💣':'✓'}</div>`;
+            if(!isActive)return`<div class="tower-cell" style="width:70px;height:40px;opacity:${inGame&&r>currentRow?0.4:0.8}">?</div>`;
+            return`<div class="tower-cell current-row" style="width:70px;height:40px;" onclick="window._towerClick(${r},${c})">?</div>`;
+          }).join('')}
+        </div>`;
+      }).reverse().join('')}
+    </div>`;
+  }
+  window._towerClick=(r,c)=>{
+    if(!inGame||r!==currentRow)return;
+    const cell=grid[r][c];
+    cleared.push(r);
+    if(cell==='bomb'){
+      inGame=false;
+      loseBet(betAmount,main);setResult('Hit a bomb! -$'+fmt(betAmount),'lose');addHistory('-$'+fmt(betAmount),'lose');
+      render();startCooldown(800);
+      document.getElementById('playBtn').textContent='New Game';
+      document.getElementById('cashoutTower').style.display='none';
+    } else {
+      currentRow--;
+      const m=1+((ROWS-currentRow-1)*0.3);
+      render();
+      document.getElementById('cashoutTower').textContent=`Cash Out ${m.toFixed(1)}× $${fmt(betAmount*m*0.96)}`;
+      if(currentRow<0){
+        inGame=false;
+        const p=betAmount*(1+ROWS*0.3)*0.96;
+        winBet(p-betAmount,main);setResult('Top! +$'+fmt(p-betAmount),'win');addHistory('+$'+fmt(p-betAmount),'win');
+        startCooldown(600);document.getElementById('cashoutTower').style.display='none';
+      }
+    }
+  };
+  const sidebar=document.getElementById('gameSidebar');
+  makeBetPanel('gameSidebar',{label:'Build Tower',onPlay:'window._towerStart()'});
+  const bp=sidebar.querySelector('.bet-panel');
+  const coBtn=document.createElement('button');
+  coBtn.id='cashoutTower';coBtn.className='play-btn cashout';coBtn.style.cssText='margin-top:8px;display:none;';
+  coBtn.textContent='Cash Out';coBtn.onclick=()=>window._towerCashout();
+  bp.insertBefore(coBtn,bp.querySelector('.cooldown-bar'));
+  window._towerCashout=()=>{
+    if(!inGame||cleared.length===0)return;
+    inGame=false;
+    const m=1+(cleared.length*0.3);
+    const p=betAmount*m*0.96;
+    winBet(p-betAmount,main);setResult('Cashed! +$'+fmt(p-betAmount),'win');addHistory('+$'+fmt(p-betAmount),'win');
+    render();startCooldown(500);
+    document.getElementById('cashoutTower').style.display='none';
+  };
+  window._towerStart=()=>{
+    betAmount=getBet();if(!betAmount)return;
+    buildGrid();cleared=[];currentRow=ROWS-1;inGame=true;
+    render();document.getElementById('cashoutTower').style.display='block';
+    document.getElementById('playBtn').textContent='New Game';
+  };
+  main.innerHTML=`<div style="text-align:center;color:var(--text3);font-size:15px;padding:20px;">Climb the tower — one safe per floor!</div>`;
+  render();
+  return {destroy:()=>{inGame=false;}};
+};
+
+// ===== SCRATCH CARD =====
+GAME_RUNNERS.scratch = function() {
+  const main=document.getElementById('gameMain');
+  const PRIZES=[{label:'💎 JACKPOT',mult:20,weight:0.005},{label:'⭐ BIG WIN',mult:10,weight:0.02},{label:'🔔 WIN',mult:5,weight:0.05},{label:'🍀 Lucky',mult:2.5,weight:0.1},{label:'✓ Small',mult:1.5,weight:0.15},{label:'✗ Nothing',mult:0,weight:0.675}];
+  function pickPrize(){
+    let r=rng(),total=0;
+    for(let p of PRIZES){total+=p.weight;if(r<=total)return p;}
+    return PRIZES[PRIZES.length-1];
+  }
+  let currentPrize=null,scratched=false;
+  function render(reveal=false){
+    const p=currentPrize;
+    main.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:20px;padding:30px;">
+      <div class="scratch-card">
+        <div class="scratch-prize" style="background:${p&&reveal?'linear-gradient(135deg,#1a2050,#0a1030)':'#0a1030'}">
+          ${p&&reveal?`<div style="text-align:center;"><div style="font-size:14px;font-weight:900;color:${p.mult>1?'var(--gold)':'var(--text3)'}">${p.label}</div>${p.mult>0?`<div style="font-size:11px;color:var(--text2);margin-top:4px;">${p.mult}× payout</div>`:''}</div>`:''}
+        </div>
+        ${!reveal?`<div class="scratch-layer" id="scratchLayer" onclick="window._scratchReveal()">
+          <div style="text-align:center"><div style="font-size:20px">🪙</div><div style="margin-top:4px">SCRATCH HERE</div></div>
+        </div>`:''}
+      </div>
+      ${reveal&&p?`<div style="font-size:18px;font-weight:800;color:${p.mult>1?'var(--gold)':'var(--red)'}">${p.mult>1?'You won!':'Better luck next time'}</div>`:''}
+    </div>`;
+  }
+  window._scratchReveal=()=>{
+    if(scratched)return;
+    scratched=true;
+    const bet=getBet();if(!bet)return;
+    currentPrize=pickPrize();
+    render(true);
+    if(currentPrize.mult>1){
+      const p=bet*currentPrize.mult*0.97;
+      winBet(p-bet,main);setResult(currentPrize.label+' +$'+fmt(p-bet),'win');addHistory('+$'+fmt(p-bet),'win');
+    } else {
+      loseBet(bet,main);setResult('Nothing -$'+fmt(bet),'lose');addHistory('-$'+fmt(bet),'lose');
+    }
+    startCooldown(600);scratched=false;
+  };
+  makeBetPanel('gameSidebar',{label:'Get Card',onPlay:'window._scratchGet()'});
+  window._scratchGet=()=>{
+    const bet=getBet();if(!bet)return;
+    scratched=false;currentPrize=null;render(false);
+    document.getElementById('playBtn').textContent='New Card';
+  };
+  main.innerHTML=`<div style="text-align:center;color:var(--text3);font-size:15px;padding:20px;">Get a scratch card!</div>`;
+  render(false);
+  return {destroy:()=>{}};
+};
+
+// ===== COLOR CRASH =====
+GAME_RUNNERS.colors = function() {
+  const main=document.getElementById('gameMain');
+  const OPTS=[{id:'red',label:'Red',color:'var(--red)',prob:0.46},{id:'blue',label:'Blue',color:'var(--accent2)',prob:0.46},{id:'green',label:'Green',color:'var(--green)',prob:0.08}];
+  const PAYS={red:2,blue:2,green:14};
+  let spinning=false,chosen=null;
+  function render(result=null){
+    main.innerHTML=`<div style="padding:24px;display:flex;flex-direction:column;align-items:center;gap:20px;width:100%;">
+      <div style="font-size:14px;color:var(--text2);">Pick a color to bet on</div>
+      <div class="color-options" style="width:min(360px,90%);">
+        ${OPTS.map(o=>`<div class="color-opt ${o.id}-opt${chosen===o.id?' selected':''}" style="border-width:${chosen===o.id?3:1}px" onclick="window._colorChose('${o.id}')">
+          <div style="font-size:20px;font-weight:900">${o.label}</div>
+          <div style="font-size:12px;margin-top:4px;opacity:0.7">${PAYS[o.id]}×</div>
+        </div>`).join('')}
+      </div>
+      ${result?`<div style="width:100px;height:100px;border-radius:50%;background:${OPTS.find(o=>o.id===result)?.color};display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;box-shadow:0 0 24px ${OPTS.find(o=>o.id===result)?.color}">${result.toUpperCase()}</div>`:'<div style="width:100px;height:100px;border-radius:50%;background:var(--bg3);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:13px">?</div>'}
+    </div>`;
+  }
+  window._colorChose=(id)=>{chosen=id;render();};
+  render();
+  makeBetPanel('gameSidebar',{label:'Place Bet',onPlay:'window._colorBet()'});
+  window._colorBet=()=>{
+    const bet=getBet();if(!bet||spinning||!chosen){if(!chosen)showToast('Choose a color first','info');return;}
+    spinning=true;startCooldown(1500);
+    setTimeout(()=>{
+      const r=rng();
+      let result='red',acc=0;
+      for(let o of OPTS){acc+=o.prob;if(r<=acc){result=o.id;break;}}
+      render(result);
+      if(result===chosen){
+        const p=bet*PAYS[chosen]*0.97;
+        winBet(p-bet,main);setResult(chosen+' wins! +$'+fmt(p-bet),'win');addHistory('+$'+fmt(p-bet),'win');
+      } else {
+        loseBet(bet,main);setResult(result+' wins. -$'+fmt(bet),'lose');addHistory('-$'+fmt(bet),'lose');
+      }
+      spinning=false;
+    },1200);
+  };
+  return {destroy:()=>{spinning=false;}};
+};
+
+// ===== REACTION TEST =====
+GAME_RUNNERS.reaction = function() {
+  const main=document.getElementById('gameMain');
+  let phase='idle',timer=null,startTime=0,betAmount=0;
+  const TIERS=[{ms:200,mult:3},{ms:300,mult:2},{ms:450,mult:1.5},{ms:600,mult:1.2}];
+  function render(state,extra=''){
+    const colors={idle:'rgba(10,20,50,0.5)',waiting:'rgba(10,20,50,0.5)',go:'rgba(0,100,50,0.4)',result:'rgba(10,20,50,0.5)'};
+    main.innerHTML=`<div class="reaction-area" id="ra" style="background:${colors[state]};border:2px solid ${state==='go'?'var(--green)':'var(--border)'};" onclick="window._reactionTap()">
+      <div style="text-align:center;padding:30px;">
+        ${state==='idle'?`<div style="font-size:28px;font-weight:900;color:var(--text2)">Tap to Start!</div><div style="font-size:13px;color:var(--text3);margin-top:8px">Faster = bigger win</div>`:''}
+        ${state==='waiting'?`<div style="font-size:28px;font-weight:900;color:var(--text3)">Wait for green...</div>`:''}
+        ${state==='go'?`<div style="font-size:48px;font-weight:900;color:var(--green);text-shadow:0 0 20px rgba(0,200,80,0.6)">TAP!</div>`:''}
+        ${state==='early'?`<div style="font-size:28px;font-weight:900;color:var(--red)">Too Early!</div>`:''}
+        ${extra}
+      </div>
+    </div>`;
+  }
+  window._reactionTap=()=>{
+    if(phase==='idle'){
+      betAmount=getBet();if(!betAmount)return;
+      phase='waiting';render('waiting');
+      const delay=1500+rng()*3000;
+      timer=setTimeout(()=>{phase='go';startTime=Date.now();render('go');
+        timer=setTimeout(()=>{if(phase==='go'){phase='idle';render('idle',`<div style="font-size:16px;color:var(--red);margin-top:10px">Missed! Too slow!</div>`);loseBet(betAmount,main);setResult('Too slow -$'+fmt(betAmount),'lose');addHistory('-$'+fmt(betAmount),'lose');startCooldown(600);}},1200);
+      },delay);
+    } else if(phase==='waiting'){
+      clearTimeout(timer);phase='idle';
+      loseBet(betAmount,main);setResult('Too early! -$'+fmt(betAmount),'lose');addHistory('-$'+fmt(betAmount),'lose');
+      render('early');startCooldown(600);
+    } else if(phase==='go'){
+      clearTimeout(timer);
+      const elapsed=Date.now()-startTime;
+      let mult=1.0;
+      for(let t of TIERS){if(elapsed<=t.ms){mult=t.mult;break;}}
+      mult*=(1-0.04);
+      phase='idle';
+      render('result',`<div style="font-size:18px;font-weight:800;color:var(--neon)">${elapsed}ms</div><div style="font-size:14px;color:var(--text2);margin-top:6px">${mult.toFixed(2)}×</div>`);
+      if(mult>1){winBet(betAmount*mult-betAmount,main);setResult(elapsed+'ms — '+mult.toFixed(1)+'× +$'+fmt(betAmount*mult-betAmount),'win');addHistory('+$'+fmt(betAmount*mult-betAmount),'win');}
+      else{loseBet(betAmount*(1-mult),main);setResult(elapsed+'ms — Loss','lose');addHistory('-$'+fmt(betAmount*(1-mult)),'lose');}
+      startCooldown(600);
+    }
+  };
+  const sidebar=document.getElementById('gameSidebar');
+  sidebar.innerHTML=`<div class="bet-panel">
+    <div class="bet-panel-title">Reaction Test</div>
+    <div class="bet-input-wrap"><input class="bet-input" id="betInput" type="number" value="10" min="1"><button class="btn-max" onclick="maxBet()">MAX</button></div>
+    <div class="spacer-sm"></div>
+    <div style="padding:10px;background:var(--bg3);border-radius:8px;font-size:12px;color:var(--text2);line-height:1.6;">
+      Under 200ms = 3×<br>Under 300ms = 2×<br>Under 450ms = 1.5×<br>Under 600ms = 1.2×
+    </div>
+    <div class="cooldown-bar" style="margin-top:8px;"><div class="cooldown-fill" id="cooldownFill" style="width:0"></div></div>
+  </div>
+  <div class="result-panel" id="resultPanel"><div class="result-label">Result</div><div class="result-val" id="resultVal">—</div></div>
+  <div class="history-panel"><div class="history-title">Recent</div><div class="history-list" id="historyList"></div></div>`;
+  render('idle');
+  return {destroy:()=>{if(timer)clearTimeout(timer);phase='idle';}};
+};
+
+// ===== MEMORY TILES =====
+GAME_RUNNERS.memory = function() {
+  const main=document.getElementById('gameMain');
+  const COLS=[['#e00','#0a0','#00a','#a0a','#a80','#088','#e60','#484'],['#f44','#4f4','#44f','#f4f','#ff4','#4ff','#fa4','#4af']];
+  let sequence=[],playerSeq=[],level=0,phase='watch',inGame=false,betAmount=0;
+  function render(){
+    const n=Math.min(4+level,8);
+    main.innerHTML=`<div style="padding:20px;display:flex;flex-direction:column;align-items:center;gap:16px;width:100%;">
+      <div style="font-size:13px;color:var(--text2);text-align:center;">${phase==='watch'?'Watch the sequence...':`Repeat the sequence (${playerSeq.length}/${sequence.length})`} — Level ${level+1}</div>
+      <div class="memory-grid" style="grid-template-columns:repeat(4,1fr);width:min(280px,90%);">
+        ${COLS[0].map((c,i)=>`<div class="memory-tile" id="mt${i}" style="background:${inGame?c+'33':'var(--bg3)'};border:2px solid ${inGame?c+'55':'var(--border)'};" onclick="window._memoryTap(${i})"></div>`).join('')}
+      </div>
+    </div>`;
+  }
+  function flash(idx,on){
+    const el=document.getElementById('mt'+idx);
+    if(!el)return;
+    const c=COLS[0][idx];
+    el.style.background=on?c:'var(--bg3)';
+    el.style.border=`2px solid ${on?c+'aa':'var(--border)'}`;
+    if(on)el.style.boxShadow=`0 0 14px ${c}`;
+    else el.style.boxShadow='';
+  }
+  function playSequence(){
+    phase='watch';render();
+    let i=0;
+    function step(){
+      if(i>=sequence.length){phase='input';render();return;}
+      setTimeout(()=>{flash(sequence[i],true);setTimeout(()=>{flash(sequence[i],false);i++;setTimeout(step,200);},500);},100);
+    }
+    step();
+  }
+  window._memoryTap=(idx)=>{
+    if(phase!=='input'||!inGame)return;
+    flash(idx,true);setTimeout(()=>flash(idx,false),200);
+    playerSeq.push(idx);
+    if(playerSeq[playerSeq.length-1]!==sequence[playerSeq.length-1]){
+      inGame=false;
+      loseBet(betAmount,main);setResult('Wrong! -$'+fmt(betAmount),'lose');addHistory('-$'+fmt(betAmount),'lose');
+      phase='done';render();startCooldown(600);
+      document.getElementById('playBtn').textContent='New Game';
+      return;
+    }
+    if(playerSeq.length===sequence.length){
+      level++;
+      const m=1+(level*0.4)*0.96;
+      if(level>=6){
+        inGame=false;const p=betAmount*m;winBet(p-betAmount,main);setResult('Max Level! +$'+fmt(p-betAmount),'win');addHistory('+$'+fmt(p-betAmount),'win');
+        startCooldown(500);document.getElementById('playBtn').textContent='New Game';return;
+      }
+      setResult('Level '+level+'! '+m.toFixed(1)+'×','win');
+      // Cashout or continue
+      document.getElementById('resultVal').innerHTML=`Level ${level}! — <button onclick="window._memoryCashout()" class="play-btn cashout" style="display:inline-block;padding:6px 14px;margin-left:8px;font-size:12px;">Cash $${fmt(betAmount*m)}</button>`;
+      // Auto-continue after 2s
+      playerSeq=[];sequence.push(Math.floor(rng()*8));
+      setTimeout(()=>{if(inGame)playSequence();},2200);
+    }
+  };
+  window._memoryCashout=()=>{
+    if(!inGame)return;
+    inGame=false;
+    const m=(1+(level*0.4))*0.96;
+    winBet(betAmount*m-betAmount,main);setResult('Cashed! +$'+fmt(betAmount*m-betAmount),'win');addHistory('+$'+fmt(betAmount*m-betAmount),'win');
+    startCooldown(500);document.getElementById('playBtn').textContent='New Game';
+  };
+  makeBetPanel('gameSidebar',{label:'Start',onPlay:'window._memoryStart()'});
+  window._memoryStart=()=>{
+    betAmount=getBet();if(!betAmount)return;
+    level=0;inGame=true;sequence=[Math.floor(rng()*8)];playerSeq=[];
+    render();setTimeout(playSequence,600);
+    document.getElementById('playBtn').textContent='New Game';
+  };
+  main.innerHTML=`<div style="text-align:center;color:var(--text3);font-size:15px;padding:20px;">Watch and repeat the sequence!</div>`;
+  render();
+  return {destroy:()=>{inGame=false;}};
+};
+
+// ===== CRASH X =====
+GAME_RUNNERS.crash2 = function() {
+  const main=document.getElementById('gameMain');
+  main.innerHTML=`<canvas id="cxCanvas" width="440" height="280" style="display:block;margin:auto;border-radius:12px;background:rgba(5,5,20,0.8);border:1px solid var(--border);"></canvas>`;
+  const canvas=document.getElementById('cxCanvas');
+  const ctx=canvas.getContext('2d');
+  let mult=1,crashed=false,running=false,cashedOut=false,betAmount=0,animId=null;
+  let history=[];
+  function drawHist(){
+    const w=440,h=280;
+    ctx.clearRect(0,0,w,h);
+    // grid
+    ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
+    for(let i=0;i<=4;i++){const y=20+i*55;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+    // history bars
+    const bw=w/(Math.max(history.length,1));
+    history.forEach((v,i)=>{
+      const bh=Math.min((v/20)*220,220);
+      ctx.fillStyle=v>=2?'rgba(0,200,80,0.3)':'rgba(255,61,90,0.3)';
+      ctx.fillRect(i*bw,h-bh-20,bw-2,bh);
+      ctx.fillStyle=v>=2?'#0f6':'#f55';
+      ctx.font='9px sans-serif';ctx.textAlign='center';
+      ctx.fillText(v.toFixed(1)+'×',i*bw+bw/2,h-bh-24);
+    });
+    // Current mult
+    if(running||crashed){
+      const color=crashed?'#f55':'#0cf';
+      ctx.font=`bold ${crashed?36:52}px sans-serif`;ctx.textAlign='center';
+      ctx.fillStyle=color;
+      ctx.fillText(mult.toFixed(2)+'×',w/2,h/2+(crashed?10:0));
+      if(crashed){ctx.font='bold 18px sans-serif';ctx.fillStyle='rgba(255,80,80,0.8)';ctx.fillText('CRASHED',w/2,h/2+36);}
+    } else {
+      ctx.font='bold 18px sans-serif';ctx.textAlign='center';ctx.fillStyle='rgba(255,255,255,0.2)';
+      ctx.fillText('Place bet to fly',w/2,h/2);
+    }
+  }
+  drawHist();
+  const sidebar=document.getElementById('gameSidebar');
+  makeBetPanel('gameSidebar',{label:'Launch',onPlay:'window._cx2Bet()'});
+  const bp=sidebar.querySelector('.bet-panel');
+  const co=document.createElement('button');
+  co.className='play-btn cashout';co.id='cx2Co';co.style.display='none';co.textContent='Cash Out';
+  co.onclick=()=>window._cx2Cash();bp.insertBefore(co,bp.querySelector('.cooldown-bar'));
+  function genCrash(){
+    const r=rng();
+    if(r<0.05)return 1+(rng()*0.2);
+    return Math.max(1.05,0.98/(rng()*(1-0.02)));
+  }
+  let crashAt=2,speed=0.003;
+  window._cx2Bet=()=>{
+    if(running)return;betAmount=getBet();if(!betAmount)return;
+    running=true;crashed=false;cashedOut=false;mult=1;speed=0.003;
+    crashAt=genCrash();
+    document.getElementById('playBtn').disabled=true;
+    document.getElementById('cx2Co').style.display='block';
+    function tick(){
+      if(!running)return;
+      speed+=0.000018;mult+=speed*mult;
+      drawHist();
+      if(mult>=crashAt){
+        running=false;crashed=true;
+        history.push(mult);if(history.length>14)history.shift();
+        drawHist();
+        document.getElementById('cx2Co').style.display='none';
+        document.getElementById('playBtn').disabled=false;
+        if(!cashedOut){loseBet(betAmount,main);setResult('Crashed '+mult.toFixed(2)+'×','lose');addHistory('-$'+fmt(betAmount),'lose');}
+        startCooldown(600);return;
+      }
+      animId=requestAnimationFrame(tick);
+    }
+    animId=requestAnimationFrame(tick);
+  };
+  window._cx2Cash=()=>{
+    if(!running||crashed||cashedOut)return;
+    cashedOut=true;running=false;
+    if(animId)cancelAnimationFrame(animId);
+    history.push(mult);if(history.length>14)history.shift();
+    const p=betAmount*mult*0.97;
+    winBet(p-betAmount,main);setResult('Cashed '+mult.toFixed(2)+'× +$'+fmt(p-betAmount),'win');addHistory('+$'+fmt(p-betAmount),'win');
+    document.getElementById('cx2Co').style.display='none';
+    document.getElementById('playBtn').disabled=false;
+    startCooldown(500);drawHist();
+  };
+  return {destroy:()=>{running=false;if(animId)cancelAnimationFrame(animId);}};
+};
+
+// ===== NUMBER GUESS =====
+GAME_RUNNERS.guess = function() {
+  const main=document.getElementById('gameMain');
+  let target=null, attempts=0, maxAttempts=7, betAmount=0, inGame=false;
+  function render(hint=''){
+    main.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:20px;padding:30px;text-align:center;">
+      <div style="font-size:14px;color:var(--text2)">Guess a number 1-100<br>You have ${maxAttempts-attempts} attempts left</div>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <input class="guess-input" id="guessIn" type="number" min="1" max="100" placeholder="1-100" onkeydown="if(event.key==='Enter')window._guessGo()">
+        <button class="play-btn" style="width:100px;padding:12px" onclick="window._guessGo()">Guess</button>
+      </div>
+      ${hint?`<div style="font-size:16px;font-weight:700;padding:10px 20px;border-radius:10px;background:var(--bg3)">${hint}</div>`:''}
+      <div style="font-size:12px;color:var(--text3)">Fewer attempts = bigger payout</div>
+    </div>`;
+    document.getElementById('guessIn')?.focus();
+  }
+  window._guessGo=()=>{
+    if(!inGame)return;
+    const v=parseInt(document.getElementById('guessIn')?.value||0);
+    if(!v||v<1||v>100){showToast('Enter 1-100','info');return;}
+    attempts++;
+    if(v===target){
+      inGame=false;
+      const mult=Math.max(1.2,(maxAttempts-attempts+1)*0.8);
+      const p=betAmount*mult*(1-0.03);
+      winBet(p-betAmount,main);setResult('Correct! +$'+fmt(p-betAmount),'win');addHistory('+$'+fmt(p-betAmount),'win');
+      render(`🎉 Correct! It was ${target}! You won!`);startCooldown(600);
+    } else if(attempts>=maxAttempts){
+      inGame=false;
+      loseBet(betAmount,main);setResult('Out of guesses -$'+fmt(betAmount),'lose');addHistory('-$'+fmt(betAmount),'lose');
+      render(`❌ It was ${target}. Better luck next time!`);startCooldown(600);
+    } else {
+      const hint=v<target?`📈 Higher than ${v}! (${maxAttempts-attempts} left)`:
+                          `📉 Lower than ${v}! (${maxAttempts-attempts} left)`;
+      render(hint);
+    }
+  };
+  makeBetPanel('gameSidebar',{label:'New Game',onPlay:'window._guessStart()'});
+  window._guessStart=()=>{
+    betAmount=getBet();if(!betAmount)return;
+    target=Math.floor(rng()*100)+1;
+    attempts=0;inGame=true;render();
+    document.getElementById('playBtn').textContent='New Game';
+  };
+  main.innerHTML=`<div style="text-align:center;color:var(--text3);font-size:15px;padding:20px;">Guess the hidden number!</div>`;
+  return {destroy:()=>{inGame=false;}};
+};
+
+// ===== BALLOON POP =====
+GAME_RUNNERS.balloon = function() {
+  const main=document.getElementById('gameMain');
+  main.innerHTML=`<canvas id="balloonCanvas" width="420" height="380" style="display:block;margin:auto;cursor:pointer;" onclick="window._balloonPump()"></canvas>`;
+  const canvas=document.getElementById('balloonCanvas');
+  const ctx=canvas.getContext('2d');
+  let size=30, maxSize=200, popped=false, inGame=false, betAmount=0;
+  let crashAt=0;
+  function draw(){
+    ctx.clearRect(0,0,420,380);
+    const cx=210,cy=200;
+    const r=size;
+    // balloon
+    const hue=popped?0:200+Math.floor((size/maxSize)*60);
+    ctx.beginPath();ctx.arc(cx,cy-r*0.3,r,0,Math.PI*2);
+    ctx.fillStyle=popped?'rgba(255,50,50,0.3)':`hsla(${hue},90%,${60+size/maxSize*20}%,0.85)`;
+    ctx.fill();
+    ctx.strokeStyle=popped?'rgba(255,50,50,0.5)':`hsla(${hue},90%,80%,0.6)`;
+    ctx.lineWidth=2;ctx.stroke();
+    // string
+    if(!popped){ctx.beginPath();ctx.moveTo(cx,cy+r*0.7);ctx.lineTo(cx,cy+r*0.7+50);ctx.strokeStyle='rgba(255,255,255,0.3)';ctx.lineWidth=1.5;ctx.stroke();}
+    // text
+    const mult=(size/30).toFixed(2);
+    ctx.font=`bold ${popped?28:20}px sans-serif`;ctx.textAlign='center';
+    ctx.fillStyle=popped?'#f55':'#fff';
+    ctx.fillText(popped?'💥 POPPED!':`${mult}×`,cx,cy-r*0.3+(popped?10:5));
+    if(!popped&&inGame){ctx.font='13px sans-serif';ctx.fillStyle='rgba(255,255,255,0.5)';ctx.fillText('Click to pump',cx,350);}
+    if(!inGame&&!popped){ctx.font='14px sans-serif';ctx.fillStyle='rgba(255,255,255,0.4)';ctx.fillText('Place bet to start',cx,350);}
+  }
+  draw();
+  window._balloonPump=()=>{
+    if(!inGame)return;
+    size+=8;
+    if(size>=crashAt){
+      popped=true;inGame=false;draw();
+      loseBet(betAmount,main);setResult('Popped! -$'+fmt(betAmount),'lose');addHistory('-$'+fmt(betAmount),'lose');
+      startCooldown(600);document.getElementById('cashoutBalloon').style.display='none';
+    } else draw();
+  };
+  const sidebar=document.getElementById('gameSidebar');
+  makeBetPanel('gameSidebar',{label:'Inflate!',onPlay:'window._balloonStart()'});
+  const bp=sidebar.querySelector('.bet-panel');
+  const co=document.createElement('button');
+  co.id='cashoutBalloon';co.className='play-btn cashout';co.style.cssText='margin-top:8px;display:none;';
+  co.textContent='Cash Out';co.onclick=()=>window._balloonCash();
+  bp.insertBefore(co,bp.querySelector('.cooldown-bar'));
+  window._balloonCash=()=>{
+    if(!inGame)return;inGame=false;
+    const m=size/30;const p=betAmount*m*0.96;
+    winBet(p-betAmount,main);setResult((m).toFixed(2)+'× +$'+fmt(p-betAmount),'win');addHistory('+$'+fmt(p-betAmount),'win');
+    draw();startCooldown(500);document.getElementById('cashoutBalloon').style.display='none';
+  };
+  window._balloonStart=()=>{
+    betAmount=getBet();if(!betAmount)return;
+    size=30;popped=false;inGame=true;
+    crashAt=60+rng()*160;// random pop point
+    draw();document.getElementById('cashoutBalloon').style.display='block';
+    document.getElementById('playBtn').textContent='Restart';
+  };
+  return {destroy:()=>{inGame=false;}};
+};
+
+// ========== INIT ==========
+window.addEventListener('DOMContentLoaded',()=>{
+  loadState();
+  buildGameCards();
+  updateNav();
+  // Remove loading screen
+  setTimeout(()=>{
+    const ls=document.getElementById('loadingScreen');
+    ls.style.opacity='0';
+    setTimeout(()=>ls.remove(),500);
+  },1400);
+  // Keyboard shortcuts
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&STATE.currentGame)showHome();
+  });
+});
+// expose globals needed
+window.showHome=showHome;
+window.openDeposit=openDeposit;
+window.closeDeposit=closeDeposit;
+window.confirmDeposit=confirmDeposit;
+window.setDepositQuick=setDepositQuick;
+window.getBet=getBet;
+window.setBet=setBet;
+window.adjustBet=adjustBet;
+window.maxBet=maxBet;
+window.setResult=setResult;
+window.addHistory=addHistory;
+window.startCooldown=startCooldown;
+window.fmt=fmt;
+window.winBet=winBet;
+window.loseBet=loseBet;
+</script>
+</body>
+</html>
+HTMLEOF
